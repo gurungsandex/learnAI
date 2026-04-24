@@ -94,7 +94,7 @@ export default function HomeScreen() {
             {state.completedChapters.length === 0
               ? "Start Chapter 1 to begin your AI adventure!"
               : state.completedChapters.length >= 8
-              ? "🎉 You completed ByteQuest! Check your certificate!"
+              ? "🎉 You completed LearnAI! Check your certificate!"
               : `Keep going! ${8 - state.completedChapters.length} chapters left to build your AI agent!`
             }
           </p>

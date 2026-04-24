@@ -1,4 +1,4 @@
-# 🤖 ByteQuest — AI Learning App for Kids
+# 🤖 LearnAI — AI Learning App for Kids
 
 > **Learn AI through comic-style adventures and build your own AI agent!**
 > Designed for kids ages 8–12. No backend needed — runs entirely in the browser.
@@ -11,7 +11,7 @@
 Download and install Node.js from [nodejs.org](https://nodejs.org) (choose the "LTS" version).
 
 ### 2. Open a terminal in this folder
-On Mac: right-click the `bytequest` folder → "Open Terminal here"  
+On Mac: right-click the `learnai` folder → "Open Terminal here"  
 On Windows: right-click → "Open in Terminal"
 
 ### 3. Install packages
@@ -42,7 +42,7 @@ This creates a `dist/` folder you can deploy anywhere.
 2. Run: `npm run build`
 3. Deploy the `dist/` folder using [GitHub Pages](https://pages.github.com) or drag it to [Netlify](https://netlify.com) / [Vercel](https://vercel.com)
 
-**Note:** If deploying to a GitHub Pages *subfolder* (e.g. `username.github.io/bytequest`), edit `vite.config.js` and change `base: '/'` to `base: '/bytequest/'`.
+**Note:** If deploying to a GitHub Pages *subfolder* (e.g. `username.github.io/learnai`), edit `vite.config.js` and change `base: '/'` to `base: '/learnai/'`.
 
 ---
 
@@ -55,7 +55,7 @@ To publish to iOS App Store or Google Play:
 npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android
 
 # Initialize
-npx cap init ByteQuest com.yourname.bytequest
+npx cap init LearnAI com.yourname.learnai
 
 # Build web first
 npm run build
@@ -75,7 +75,7 @@ npx cap open android  # Opens Android Studio
 ## 🗂️ Project Structure
 
 ```
-bytequest/
+learnai/
 ├── public/
 │   └── favicon.svg              ← App icon
 ├── src/
@@ -203,10 +203,10 @@ Use them in `panels[].characters.left.emotion` or `characters.right.emotion`.
 
 ## 💾 Data Storage
 
-All progress is saved to `localStorage` under the key `bytequest_save`.  
+All progress is saved to `localStorage` under the key `learnai_save`.  
 There is no backend, database, or user accounts — everything lives on the player's device.
 
-To clear saved data during development, open browser DevTools → Application → Local Storage → delete `bytequest_save`.
+To clear saved data during development, open browser DevTools → Application → Local Storage → delete `learnai_save`.
 
 ---
 

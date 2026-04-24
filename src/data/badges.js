@@ -1,6 +1,6 @@
 /**
  * badges.js
- * All badges in ByteQuest.
+ * All badges in LearnAI.
  * Each badge is tied to a chapter completion or special achievement.
  * To add a new badge: add it here AND reference it in chapters.js
  */
@@ -21,7 +21,7 @@ export const ALL_BADGES = [
   { id: 'perfectionist',  name: 'Perfectionist',  emoji: '💯', chapter: null, description: 'Got 100% on a quiz!'             },
   { id: 'builder_pro',    name: 'Builder Pro',    emoji: '🔨', chapter: null, description: 'Created an AI agent with 5+ rules!' },
   { id: 'streak_3',       name: 'On Fire!',       emoji: '🔥', chapter: null, description: 'Completed 3 chapters in a row!'   },
-  { id: 'graduate',       name: 'ByteQuest Graduate', emoji: '🎓', chapter: null, description: 'Completed all 8 chapters!'    },
+  { id: 'graduate',       name: 'LearnAI Graduate', emoji: '🎓', chapter: null, description: 'Completed all 8 chapters!'    },
 ]
 
 export function getBadge(id) {

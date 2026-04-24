@@ -69,13 +69,13 @@ export default function SplashScreen() {
           className="font-comic text-7xl text-gold"
           style={{ textShadow: '4px 4px 0px #111, 0 0 30px rgba(251,191,36,0.6)' }}
         >
-          BYTE
+          LEARN
         </div>
         <div
           className="font-comic text-7xl text-cyan"
           style={{ textShadow: '4px 4px 0px #111, 0 0 30px rgba(34,211,238,0.6)', marginTop: '-18px' }}
         >
-          QUEST
+          AI
         </div>
 
         {/* Tagline */}
@@ -101,7 +101,7 @@ export default function SplashScreen() {
 
       {/* ── Version stamp ── */}
       <p className="absolute bottom-4 text-xs text-purple-dark font-body">
-        ByteQuest v1.0 • Made with ❤️
+        LearnAI v1.0 • Made with ❤️
       </p>
     </div>
   )

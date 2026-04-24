@@ -6,7 +6,7 @@ export default {
   ],
   theme: {
     extend: {
-      // ── ByteQuest Comic Color Palette ─────────────────────────────────
+      // ── LearnAI Comic Color Palette ─────────────────────────────────
       colors: {
         bg: {
           deep:  '#0A0714',

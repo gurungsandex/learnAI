@@ -49,8 +49,8 @@ export default function CertificateScreen() {
   function handleShare() {
     if (navigator.share) {
       navigator.share({
-        title: 'ByteQuest Certificate!',
-        text: `🎓 I just earned my ByteQuest AI Explorer certificate! I learned about AI, machine learning, and built my own AI agent! #ByteQuest #KidsCode`,
+        title: 'LearnAI Certificate!',
+        text: `🎓 I just earned my LearnAI AI Explorer certificate! I learned about AI, machine learning, and built my own AI agent! #LearnAI #KidsCode`,
       }).catch(() => {})
     } else {
       alert('Take a screenshot to share your certificate! 📸')
@@ -99,7 +99,7 @@ export default function CertificateScreen() {
             YOU DID IT!
           </h1>
           <p className="font-body font-800 text-purple-light mt-1">
-            You've completed the ByteQuest AI adventure!
+            You've completed the LearnAI AI adventure!
           </p>
         </motion.div>
 
@@ -136,7 +136,7 @@ export default function CertificateScreen() {
             >
               CERTIFICATE OF COMPLETION
             </div>
-            <div className="font-body text-purple-light text-sm mb-4">ByteQuest AI Adventure Program</div>
+            <div className="font-body text-purple-light text-sm mb-4">LearnAI AI Adventure Program</div>
 
             {/* Divider */}
             <div className="flex items-center gap-2 mb-4">
@@ -166,7 +166,7 @@ export default function CertificateScreen() {
               className="font-comic text-xl text-white mb-1"
               style={{ textShadow: '2px 2px 0 #111' }}
             >
-              ALL 8 CHAPTERS OF BYTEQUEST
+              ALL 8 CHAPTERS OF LEARNAI
             </div>
             <p className="font-body text-purple-light text-xs mb-4">
               and demonstrated knowledge of Artificial Intelligence, Machine Learning,<br/>
@@ -210,14 +210,14 @@ export default function CertificateScreen() {
             <p className="font-body text-purple-light text-xs">
               Awarded on {todayFormatted()}
             </p>
-            <p className="font-comic text-cyan text-sm mt-1">ByteQuest · AI for Kids</p>
+            <p className="font-comic text-cyan text-sm mt-1">LearnAI · AI for Kids</p>
 
             {/* Byte signature */}
             <div className="mt-3 flex justify-center items-center gap-2">
               <div className="text-lg">🤖</div>
               <div>
                 <div className="font-comic text-white text-sm">Byte</div>
-                <div className="font-body text-purple-light" style={{ fontSize: '0.6rem' }}>Chief AI Officer, ByteQuest</div>
+                <div className="font-body text-purple-light" style={{ fontSize: '0.6rem' }}>Chief AI Officer, LearnAI</div>
               </div>
             </div>
           </div>

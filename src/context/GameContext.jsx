@@ -1,7 +1,7 @@
 /**
  * GameContext.jsx
  * ─────────────────────────────────────────────────────────────
- * Central state for ByteQuest. All game progress is stored here
+ * Central state for LearnAI. All game progress is stored here
  * AND saved to localStorage so it persists between sessions.
  *
  * To add a new feature, add it to initialState + relevant action.
@@ -110,7 +110,7 @@ export function GameProvider({ children }) {
   // Load from localStorage on first render
   const saved = (() => {
     try {
-      const raw = localStorage.getItem('bytequest_save')
+      const raw = localStorage.getItem('learnai_save')
       return raw ? { ...initialState, ...JSON.parse(raw) } : initialState
     } catch {
       return initialState
@@ -122,7 +122,7 @@ export function GameProvider({ children }) {
   // Auto-save to localStorage whenever state changes
   useEffect(() => {
     try {
-      localStorage.setItem('bytequest_save', JSON.stringify(state))
+      localStorage.setItem('learnai_save', JSON.stringify(state))
     } catch {
       // Storage full or unavailable – silently ignore
     }

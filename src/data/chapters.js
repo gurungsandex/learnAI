@@ -1,7 +1,7 @@
 /**
  * chapters.js
  * ─────────────────────────────────────────────────────────────
- * All 8 ByteQuest chapters.
+ * All 8 LearnAI chapters.
  *
  * HOW TO ADD A NEW CHAPTER:
  *   1. Copy the template at the bottom of this file
@@ -844,7 +844,7 @@ export const chapters = [
           explanation: 'Responsible AI is honest. AI that lies or misleads can cause real harm! ⚠️',
         },
         {
-          text: 'You\'ve now completed ByteQuest! What are you?',
+          text: 'You\'ve now completed LearnAI! What are you?',
           emoji: '🌟',
           options: ['A confused student', 'An AI Explorer who understands how AI works!', 'A professional programmer', 'A robot scientist'],
           correct: 1,
