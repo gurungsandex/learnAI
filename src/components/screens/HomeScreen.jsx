@@ -1,266 +1,132 @@
-/**
- * HomeScreen.jsx
- * The main hub — a winding adventure map showing all 8 chapters.
- */
+// HomeScreen.jsx – winding game map with 6 chapter nodes
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { useGame, getLevel } from '../../context/GameContext'
-import { chapters } from '../../data/chapters'
-import { XPBar } from '../ui/StarBurst'
-import { ByteCharacter } from '../ui/Character'
+import { S } from '../../tokens'
+import { Icon, ComicCard, Halftone, BottomNav } from '../ui/ComicPrimitives'
 
-// Map positions for each chapter node (x/y as % of the map width)
-// Creates a snake/zigzag path down the screen
-const NODE_POSITIONS = [
-  { x: 18,  y: 8  },   // Ch 1
-  { x: 60,  y: 18 },   // Ch 2
-  { x: 20,  y: 30 },   // Ch 3
-  { x: 65,  y: 42 },   // Ch 4
-  { x: 18,  y: 54 },   // Ch 5
-  { x: 62,  y: 64 },   // Ch 6
-  { x: 22,  y: 76 },   // Ch 7
-  { x: 60,  y: 87 },   // Ch 8
+const CHAPTERS = [
+  { id: 1, x: 60,  y: 580, label: 'WHAT IS\nAI?',        state: 'done',    icon: 'star' },
+  { id: 2, x: 220, y: 510, label: 'PROMPTS\n101',         state: 'done',    icon: 'star' },
+  { id: 3, x: 110, y: 410, label: 'MEET THE\nAGENT',      state: 'current', icon: 'play' },
+  { id: 4, x: 240, y: 305, label: 'GIVE IT\nA GOAL',      state: 'locked',  icon: 'lock' },
+  { id: 5, x: 90,  y: 210, label: 'TOOLS &\nMEMORY',      state: 'locked',  icon: 'lock' },
+  { id: 6, x: 230, y: 115, label: 'BUILD\nYOUR BOT',      state: 'locked',  icon: 'trophy' },
 ]
 
-export default function HomeScreen() {
-  const navigate = useNavigate()
-  const { state, isUnlocked } = useGame()
-  const level = getLevel(state.xp)
-
-  function openChapter(chapter) {
-    if (!isUnlocked(chapter.id)) return
-    if (state.completedChapters.includes(chapter.id)) {
-      // Already done — let them replay
-      navigate(`/chapter/${chapter.id}`)
-    } else {
-      navigate(`/chapter/${chapter.id}`)
-    }
-  }
-
-  const totalStars = Object.values(state.chapterStars).reduce((s, v) => s + v, 0)
-
+function ChapterNode({ c, onClick }) {
+  const bg = c.state === 'done' ? S.sun : c.state === 'current' ? S.coral : '#D8D2C9'
+  const isCurrent = c.state === 'current'
   return (
-    <div className="min-h-dvh bg-bg-deep flex flex-col">
-
-      {/* ── TOP HEADER ── */}
-      <div className="bg-bg-panel border-b-2 border-purple-dark px-4 py-3 sticky top-0 z-40">
-        <div className="flex items-center justify-between mb-2">
-          {/* Player name + level */}
-          <div className="flex items-center gap-2">
-            <div
-              className="w-9 h-9 rounded-full border-2 border-gold flex items-center justify-center font-comic text-black text-sm"
-              style={{ backgroundColor: state.avatarColor }}
-            >
-              {state.playerName?.[0]?.toUpperCase() || '?'}
-            </div>
-            <div>
-              <div className="font-comic text-white text-base leading-none">{state.playerName}</div>
-              <div className="font-body text-purple-light text-xs font-700">
-                Lv.{level.level} {level.title}
-              </div>
-            </div>
-          </div>
-
-          {/* Stats row */}
-          <div className="flex items-center gap-3">
-            <div className="text-center">
-              <div className="font-comic text-gold text-base leading-none">{totalStars}⭐</div>
-              <div className="font-body text-purple-light text-xs">Stars</div>
-            </div>
-            <div className="text-center">
-              <div className="font-comic text-cyan text-base leading-none">{state.completedChapters.length}/8</div>
-              <div className="font-body text-purple-light text-xs">Done</div>
-            </div>
-            {/* Profile button */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => navigate('/profile')}
-              className="w-9 h-9 rounded-full bg-purple-mid border-2 border-gold flex items-center justify-center text-lg"
-            >
-              🏆
-            </motion.button>
-          </div>
+    <div
+      onClick={onClick}
+      style={{
+        position: 'absolute', left: c.x, top: c.y, width: 96, marginLeft: -48,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        cursor: c.state === 'locked' ? 'not-allowed' : 'pointer', zIndex: 4,
+      }}
+    >
+      {isCurrent && (
+        <div style={{
+          position: 'absolute', top: -20, fontFamily: S.fontComic, fontSize: 12,
+          background: '#fff', border: `2px solid ${S.ink}`, padding: '2px 8px',
+          borderRadius: 99, boxShadow: `0 2px 0 ${S.ink}`, whiteSpace: 'nowrap',
+        }}>
+          YOU ARE HERE
         </div>
-
-        {/* XP progress bar */}
-        <XPBar />
+      )}
+      <div
+        className={isCurrent ? 'anim-pulse' : ''}
+        style={{
+          width: 72, height: 72, borderRadius: '50%',
+          background: bg, border: `3px solid ${S.ink}`,
+          boxShadow: `0 5px 0 ${S.ink}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <Icon name={c.icon} size={32} color={c.state === 'locked' ? '#fff' : S.ink} />
       </div>
-
-      {/* ── MOTIVATIONAL BANNER ── */}
-      <div className="mx-4 mt-3 px-4 py-2 bg-purple-dark border-2 border-purple-mid rounded-comic flex items-center gap-3">
-        <div className="text-2xl animate-float">🤖</div>
-        <div className="flex-1">
-          <p className="font-body font-800 text-purple-light text-sm">
-            {state.completedChapters.length === 0
-              ? "Start Chapter 1 to begin your AI adventure!"
-              : state.completedChapters.length >= 8
-              ? "🎉 You completed LearnAI! Check your certificate!"
-              : `Keep going! ${8 - state.completedChapters.length} chapters left to build your AI agent!`
-            }
-          </p>
-        </div>
-      </div>
-
-      {/* ── ADVENTURE MAP ── */}
-      <div className="flex-1 relative mx-4 my-3">
-        {/* Map background */}
-        <div
-          className="relative w-full rounded-comic border-2 border-purple-mid overflow-hidden"
-          style={{
-            minHeight: '620px',
-            background: 'linear-gradient(180deg, #0D1B2A 0%, #1E0A3C 50%, #0A0714 100%)',
-          }}
-        >
-          {/* Halftone overlay */}
-          <div className="absolute inset-0 halftone-bg-light pointer-events-none" />
-
-          {/* Map title */}
-          <div className="absolute top-3 left-0 right-0 text-center">
-            <span className="font-comic text-purple-light text-sm tracking-widest opacity-60">AI ADVENTURE MAP</span>
-          </div>
-
-          {/* ── PATH LINES (SVG) ── */}
-          <svg
-            className="absolute inset-0 w-full h-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            {NODE_POSITIONS.slice(0, -1).map((pos, i) => {
-              const next = NODE_POSITIONS[i + 1]
-              const done = state.completedChapters.includes(i + 1)
-              return (
-                <line
-                  key={i}
-                  x1={`${pos.x + 5}%`} y1={`${pos.y + 5}%`}
-                  x2={`${next.x + 5}%`} y2={`${next.y + 5}%`}
-                  stroke={done ? '#4ADE80' : '#2D1B4E'}
-                  strokeWidth="0.8"
-                  strokeDasharray={done ? '0' : '2 2'}
-                />
-              )
-            })}
-          </svg>
-
-          {/* ── CHAPTER NODES ── */}
-          {chapters.map((chapter, i) => {
-            const pos       = NODE_POSITIONS[i]
-            const unlocked  = isUnlocked(chapter.id)
-            const completed = state.completedChapters.includes(chapter.id)
-            const isCurrent = !completed && unlocked
-            const stars     = state.chapterStars[chapter.id] ?? 0
-
-            return (
-              <motion.div
-                key={chapter.id}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: i * 0.08, type: 'spring', stiffness: 260, damping: 20 }}
-                className="absolute"
-                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-              >
-                {/* Pulse ring for current chapter */}
-                {isCurrent && (
-                  <div
-                    className="absolute -inset-2 rounded-full border-2 border-gold animate-pulse opacity-60"
-                  />
-                )}
-
-                {/* Node button */}
-                <motion.button
-                  whileTap={unlocked ? { scale: 0.9 } : {}}
-                  onClick={() => openChapter(chapter)}
-                  className={`relative flex flex-col items-center`}
-                  style={{ cursor: unlocked ? 'pointer' : 'default' }}
-                >
-                  {/* Circle */}
-                  <div
-                    className={`
-                      w-16 h-16 rounded-full border-4 flex items-center justify-center text-2xl
-                      ${completed ? 'border-green bg-bg-card' : ''}
-                      ${isCurrent  ? 'border-gold' : ''}
-                      ${!unlocked  ? 'border-purple-dark bg-bg-deep opacity-50' : ''}
-                    `}
-                    style={{
-                      backgroundColor: isCurrent ? chapter.color : undefined,
-                      boxShadow: isCurrent
-                        ? `4px 4px 0 #111, 0 0 16px ${chapter.color}80`
-                        : '3px 3px 0 #111',
-                    }}
-                  >
-                    {completed ? '✅' : !unlocked ? '🔒' : chapter.icon}
-                  </div>
-
-                  {/* Stars */}
-                  {completed && (
-                    <div className="flex gap-0.5 mt-0.5">
-                      {[1,2,3].map(s => (
-                        <span key={s} className={`text-xs ${s <= stars ? 'text-gold' : 'text-purple-dark'}`}>★</span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Label */}
-                  <div
-                    className={`
-                      mt-1 font-comic text-xs px-2 py-0.5 rounded-full border text-center whitespace-nowrap
-                      ${isCurrent  ? 'bg-gold text-black border-black'           : ''}
-                      ${completed  ? 'bg-bg-card text-green border-green'        : ''}
-                      ${!unlocked  ? 'bg-transparent text-purple-dark border-purple-dark' : ''}
-                    `}
-                    style={{
-                      boxShadow: isCurrent ? '2px 2px 0 #111' : undefined,
-                      fontSize: '0.65rem',
-                    }}
-                  >
-                    Ch.{chapter.id}
-                  </div>
-                </motion.button>
-              </motion.div>
-            )
-          })}
-
-          {/* ── Byte floats near current chapter ── */}
-          {(() => {
-            const currentIdx = Math.max(0, state.completedChapters.length)
-            if (currentIdx >= NODE_POSITIONS.length) return null
-            const pos = NODE_POSITIONS[currentIdx]
-            return (
-              <motion.div
-                className="absolute animate-float pointer-events-none"
-                style={{ left: `${pos.x + 12}%`, top: `${pos.y - 10}%` }}
-                animate={{ x: [0, 4, -4, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
-              >
-                <ByteCharacter emotion="happy" size={44} />
-              </motion.div>
-            )
-          })()}
-        </div>
-      </div>
-
-      {/* ── BOTTOM NAV ── */}
-      <div className="bg-bg-panel border-t-2 border-purple-dark px-4 py-3 flex justify-around">
-        <NavButton emoji="🗺️" label="Map"     active={true}     onClick={() => {}} />
-        <NavButton emoji="🔨" label="Builder"  active={false}    onClick={() => navigate('/builder')} />
-        <NavButton emoji="🏆" label="Profile"  active={false}    onClick={() => navigate('/profile')} />
-        {state.hasCompletedGame && (
-          <NavButton emoji="🎓" label="Certificate" active={false} onClick={() => navigate('/certificate')} />
-        )}
+      <div style={{
+        marginTop: 6, padding: '3px 10px', borderRadius: 12,
+        background: isCurrent ? S.ink : 'rgba(255,255,255,0.85)',
+        color: isCurrent ? S.sun : S.ink,
+        fontFamily: S.fontDisplay, fontSize: 11, lineHeight: 1.05,
+        textAlign: 'center', whiteSpace: 'pre',
+        border: `2px solid ${S.ink}`,
+      }}>
+        {c.label}
       </div>
     </div>
   )
 }
 
-function NavButton({ emoji, label, active, onClick }) {
+export default function HomeScreen() {
+  const navigate = useNavigate()
+
+  function handleNav(id) {
+    if (id === 'profile') navigate('/profile')
+    else if (id === 'builder') navigate('/builder')
+  }
+
   return (
-    <motion.button
-      whileTap={{ scale: 0.9 }}
-      onClick={onClick}
-      className={`flex flex-col items-center gap-1 px-4 py-1 rounded-comic transition-all
-        ${active ? 'text-gold' : 'text-purple-light'}`}
-    >
-      <span className="text-2xl">{emoji}</span>
-      <span className={`font-comic text-xs ${active ? 'text-gold' : ''}`}>{label}</span>
-    </motion.button>
+    <div style={{
+      position: 'relative', width: '100%', height: '100dvh',
+      background: `linear-gradient(180deg, ${S.mint} 0%, #C8E8D8 50%, ${S.cream} 100%)`,
+      overflow: 'hidden',
+    }}>
+      <Halftone color={S.navy} op={0.06} size={6} />
+
+      {/* Hills + clouds */}
+      <svg width="100%" height="100%" viewBox="0 0 360 700" style={{ position: 'absolute', inset: 0 }} preserveAspectRatio="xMidYMid slice">
+        <path d="M-20 240 q60 -40 120 0 q60 40 140 -10 q60 -50 140 0 L420 700 L-20 700 Z" fill={S.blush} opacity="0.45"/>
+        <path d="M-20 380 q80 -50 160 0 q80 50 200 -20 q40 -30 80 10 L420 700 L-20 700 Z" fill={S.peach} opacity="0.55"/>
+        {/* Cloud 1 */}
+        <circle cx="40" cy="120" r="18" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+        <circle cx="60" cy="110" r="22" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+        <circle cx="80" cy="120" r="16" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+        <circle cx="60" cy="130" r="20" fill="#fff" stroke="none"/>
+        {/* Cloud 2 */}
+        <circle cx="280" cy="60" r="14" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+        <circle cx="300" cy="55" r="18" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+        <circle cx="320" cy="62" r="14" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+        <circle cx="300" cy="68" r="14" fill="#fff" stroke="none"/>
+      </svg>
+
+      {/* Top HUD */}
+      <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'center', gap: 10, zIndex: 5 }}>
+        <ComicCard bg={S.sun} padding="6px 12px" radius={S.rPill} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Icon name="bolt" size={18} color={S.coralDeep} />
+          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>240 XP</span>
+        </ComicCard>
+        <ComicCard bg="#fff" padding="6px 12px" radius={S.rPill} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Icon name="fire" size={18} color={S.coralDeep} />
+          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>5</span>
+        </ComicCard>
+        <div style={{ flex: 1 }} />
+        <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+          <ComicCard bg={S.peach} padding="6px" radius={S.rPill}>
+            <Icon name="profile" size={22} />
+          </ComicCard>
+        </div>
+      </div>
+
+      {/* Winding dashed path */}
+      <svg width="100%" height="700" viewBox="0 0 360 700" style={{ position: 'absolute', top: 0, left: 0 }}>
+        <path
+          d="M90 600 Q160 580 240 540 Q300 510 200 460 Q120 420 130 380 Q150 320 250 290 Q330 260 220 220 Q120 190 110 160 Q120 130 230 100"
+          stroke={S.ink} strokeWidth="6" fill="none" strokeDasharray="2 14" strokeLinecap="round"
+        />
+      </svg>
+
+      {/* Chapter nodes */}
+      {CHAPTERS.map(c => (
+        <ChapterNode
+          key={c.id}
+          c={c}
+          onClick={() => c.state === 'current' && navigate('/chapter/3')}
+        />
+      ))}
+
+      {/* Bottom nav */}
+      <BottomNav active="home" onNav={handleNav} />
+    </div>
   )
 }

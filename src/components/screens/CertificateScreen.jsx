@@ -1,262 +1,103 @@
-/**
- * CertificateScreen.jsx
- * Shown when the player completes all 8 chapters.
- * Renders a "printable" certificate and has a share/screenshot prompt.
- */
-import { useRef } from 'react'
+// CertificateScreen.jsx – celebration + certificate card
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { useGame, getLevel } from '../../context/GameContext'
-import { ZaraCharacter, ByteCharacter } from '../ui/Character'
+import { S } from '../../tokens'
+import { Sparky } from '../ui/Characters'
+import { ComicButton, Icon, Halftone } from '../ui/ComicPrimitives'
 
-// Today's date formatted nicely
-function todayFormatted() {
-  return new Date().toLocaleDateString('en-US', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  })
-}
+const CONFETTI_COLORS = [S.sun, S.mint, S.lilac, '#fff']
 
 export default function CertificateScreen() {
-  const navigate    = useNavigate()
-  const { state }   = useGame()
-  const certRef     = useRef(null)
-  const level       = getLevel(state.xp)
-
-  const totalStars  = Object.values(state.chapterStars).reduce((s, v) => s + v, 0)
-
-  // Not completed? Redirect
-  if (!state.hasCompletedGame && state.completedChapters.length < 8) {
-    return (
-      <div className="min-h-dvh bg-bg-deep flex flex-col items-center justify-center px-6">
-        <div className="text-6xl mb-4">🔒</div>
-        <h2 className="font-comic text-gold text-3xl text-center mb-3">
-          NOT YET!
-        </h2>
-        <p className="font-body text-purple-light text-center mb-6">
-          Complete all 8 chapters to unlock your certificate!
-        </p>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/home')}
-          className="btn-gold text-xl py-4 px-8"
-        >
-          BACK TO MAP 🗺️
-        </motion.button>
-      </div>
-    )
-  }
-
-  function handleShare() {
-    if (navigator.share) {
-      navigator.share({
-        title: 'LearnAI Certificate!',
-        text: `🎓 I just earned my LearnAI AI Explorer certificate! I learned about AI, machine learning, and built my own AI agent! #LearnAI #KidsCode`,
-      }).catch(() => {})
-    } else {
-      alert('Take a screenshot to share your certificate! 📸')
-    }
-  }
+  const navigate = useNavigate()
 
   return (
-    <div className="min-h-dvh bg-bg-deep flex flex-col">
+    <div style={{ position: 'relative', width: '100%', height: '100dvh', overflow: 'hidden', background: `radial-gradient(circle at 50% 30%, ${S.sun} 0%, ${S.coral} 60%, ${S.coralDeep} 100%)` }}>
+      <Halftone color="#fff" op={0.18} size={5} />
 
-      {/* ── Top bar ── */}
-      <div className="bg-bg-panel border-b-2 border-purple-dark px-4 py-3 flex items-center gap-3 sticky top-0 z-40">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => navigate('/home')}
-          className="w-9 h-9 rounded-full bg-purple-dark border-2 border-purple-mid flex items-center justify-center text-white font-comic text-lg"
-        >
-          ←
-        </motion.button>
-        <div className="font-comic text-gold text-xl">🎓 YOUR CERTIFICATE</div>
+      {/* Sun rays */}
+      <svg width="100%" height="100%" viewBox="0 0 360 780" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, opacity: 0.45 }}>
+        <g transform="translate(180 280)">
+          {Array.from({ length: 18 }).map((_, i) => (
+            <path key={i} d="M0 -400 L40 0 L-40 0 Z" fill="#fff" opacity="0.25" transform={`rotate(${i * 20})`} />
+          ))}
+        </g>
+      </svg>
+
+      {/* Confetti */}
+      <svg width="100%" height="100%" viewBox="0 0 360 780" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        {Array.from({ length: 24 }).map((_, i) => {
+          const x = (i * 47) % 360, y = (i * 113) % 700
+          const rot = (i * 37) % 360
+          return <rect key={i} x={x} y={y} width="6" height="14" rx="1" fill={CONFETTI_COLORS[i % 4]} transform={`rotate(${rot} ${x + 3} ${y + 7})`} />
+        })}
+      </svg>
+
+      {/* Close */}
+      <div style={{ position: 'absolute', top: 30, left: 16, zIndex: 10, cursor: 'pointer' }} onClick={() => navigate('/profile')}>
+        <div style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="x" size={20} />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+      {/* Chapter complete pill */}
+      <div style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', zIndex: 4 }}>
+        <div style={{ fontFamily: S.fontDisplay, fontSize: 18, color: S.ink, background: '#fff', display: 'inline-block', padding: '4px 14px', borderRadius: 99, border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}` }}>
+          🎉 CHAPTER 1 COMPLETE
+        </div>
+      </div>
 
-        {/* ── Celebration header ── */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-          className="text-center py-4"
-        >
-          {/* Confetti stars */}
-          <div className="flex justify-center gap-2 mb-2">
-            {['🎉','⭐','🏆','⭐','🎉'].map((e, i) => (
-              <motion.span
-                key={i}
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: i * 0.1, type: 'spring' }}
-                className="text-3xl"
-              >
-                {e}
-              </motion.span>
-            ))}
+      {/* Sparky */}
+      <div className="anim-bob" style={{ position: 'absolute', top: 110, left: '50%', transform: 'translateX(-50%)', zIndex: 3 }}>
+        <Sparky size={140} expression="celebrate" />
+      </div>
+
+      {/* Certificate card */}
+      <div style={{ position: 'absolute', top: 270, left: 18, right: 18, zIndex: 4 }}>
+        <div style={{ background: S.paper, border: `3.5px solid ${S.ink}`, borderRadius: 18, padding: 18, boxShadow: `0 6px 0 ${S.ink}`, position: 'relative' }}>
+          <span style={{ position: 'absolute', top: 8, left: 14 }}><Icon name="star" size={18} color={S.sun} /></span>
+          <span style={{ position: 'absolute', top: 8, right: 14 }}><Icon name="star" size={18} color={S.sun} /></span>
+
+          <div style={{ textAlign: 'center', fontFamily: S.fontComic, fontSize: 12, color: S.inkSoft, letterSpacing: 2 }}>OFFICIAL · CERTIFICATE · OF · AGENT-OLOGY</div>
+          <div style={{ marginTop: 10, fontFamily: S.fontDisplay, fontSize: 26, color: S.coralDeep, textAlign: 'center', lineHeight: 1.05 }}>FOX_42</div>
+          <div style={{ fontFamily: S.fontComic, fontSize: 14, color: S.ink, textAlign: 'center', marginTop: 4 }}>has officially leveled up to</div>
+          <div style={{ fontFamily: S.fontDisplay, fontSize: 22, color: S.ink, textAlign: 'center', lineHeight: 1.05, marginTop: 4 }}>JUNIOR AGENT-MAKER</div>
+          <div style={{ fontFamily: S.fontComic, fontSize: 13, color: S.inkSoft, textAlign: 'center', marginTop: 10, lineHeight: 1.3 }}>
+            For successfully teaching Tidy-Bot 3000 to clean a fictional bedroom and proving that <i>goal → look → think → act</i> beats yelling at the floor.
           </div>
-          <h1 className="font-comic text-4xl text-gold" style={{ textShadow: '3px 3px 0 #111' }}>
-            YOU DID IT!
-          </h1>
-          <p className="font-body font-800 text-purple-light mt-1">
-            You've completed the LearnAI AI adventure!
-          </p>
-        </motion.div>
 
-        {/* ═══════════════════════════════════════
-            THE CERTIFICATE
-          ═══════════════════════════════════════ */}
-        <motion.div
-          ref={certRef}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="relative rounded-comic overflow-hidden"
-          style={{
-            background: 'linear-gradient(145deg, #1a0a2e 0%, #0f1a2e 50%, #0a0a1a 100%)',
-            border: '4px solid #FBBF24',
-            boxShadow: '6px 6px 0 #111, 0 0 30px rgba(251,191,36,0.4)',
-          }}
-        >
-          {/* Corner decorations */}
-          {['top-2 left-2', 'top-2 right-2', 'bottom-2 left-2', 'bottom-2 right-2'].map((pos, i) => (
-            <div key={i} className={`absolute ${pos} text-gold text-xl opacity-60`}>★</div>
-          ))}
-
-          {/* Halftone bg */}
-          <div className="absolute inset-0 halftone-bg opacity-30 pointer-events-none" />
-
-          {/* Certificate content */}
-          <div className="relative z-10 p-6 text-center">
-
-            {/* Header */}
-            <div
-              className="font-comic text-2xl text-gold mb-1"
-              style={{ textShadow: '2px 2px 0 #111' }}
-            >
-              CERTIFICATE OF COMPLETION
-            </div>
-            <div className="font-body text-purple-light text-sm mb-4">LearnAI AI Adventure Program</div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex-1 h-px bg-gold opacity-40" />
-              <span className="text-gold text-sm">✦</span>
-              <div className="flex-1 h-px bg-gold opacity-40" />
-            </div>
-
-            {/* "This certifies" text */}
-            <p className="font-body text-purple-light text-sm mb-2">This certifies that</p>
-
-            {/* Player name */}
-            <div
-              className="font-comic text-4xl mb-2"
-              style={{
-                color: '#22D3EE',
-                textShadow: '3px 3px 0 #111, 0 0 20px rgba(34,211,238,0.5)',
-              }}
-            >
-              {state.playerName}
-            </div>
-
-            <p className="font-body text-purple-light text-sm mb-4">has successfully completed</p>
-
-            {/* Achievement */}
-            <div
-              className="font-comic text-xl text-white mb-1"
-              style={{ textShadow: '2px 2px 0 #111' }}
-            >
-              ALL 8 CHAPTERS OF LEARNAI
-            </div>
-            <p className="font-body text-purple-light text-xs mb-4">
-              and demonstrated knowledge of Artificial Intelligence, Machine Learning,<br/>
-              Computer Vision, Natural Language Processing, and AI Agent Design
-            </p>
-
-            {/* Characters flanking a medal */}
-            <div className="flex items-end justify-center gap-6 mb-4">
-              <ZaraCharacter emotion="proud"   size={80} skinColor={state.avatarColor} />
-              <div className="flex flex-col items-center mb-4">
-                <div className="text-5xl mb-1">🏆</div>
-                <div className="font-comic text-gold text-sm">GOLD</div>
-                <div className="font-comic text-gold text-sm">GRADUATE</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14 }}>
+            <div>
+              <div style={{ borderBottom: `2px solid ${S.ink}`, width: 80, marginBottom: 2 }}>
+                <span style={{ fontFamily: S.fontSig, fontSize: 18, color: S.navy }}>Sparky</span>
               </div>
-              <ByteCharacter emotion="proud" size={72} />
+              <div style={{ fontFamily: S.fontComic, fontSize: 10, color: S.inkSoft }}>Robot Headmaster</div>
             </div>
-
-            {/* Stats strip */}
-            <div className="flex justify-center gap-4 mb-4">
-              {[
-                { label: 'XP Earned',  value: `${state.xp}`,     emoji: '⚡' },
-                { label: 'Stars',      value: `${totalStars}⭐`,  emoji: '' },
-                { label: 'Badges',     value: `${state.badges.length}`,emoji: '🏅' },
-                { label: 'Level',      value: level.title,        emoji: '🌟' },
-              ].map((s, i) => (
-                <div key={i} className="text-center">
-                  <div className="font-comic text-gold text-lg leading-none">{s.emoji}{s.value}</div>
-                  <div className="font-body text-purple-light" style={{ fontSize: '0.6rem' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex-1 h-px bg-gold opacity-40" />
-              <span className="text-gold text-sm">✦</span>
-              <div className="flex-1 h-px bg-gold opacity-40" />
-            </div>
-
-            {/* Date + issuer */}
-            <p className="font-body text-purple-light text-xs">
-              Awarded on {todayFormatted()}
-            </p>
-            <p className="font-comic text-cyan text-sm mt-1">LearnAI · AI for Kids</p>
-
-            {/* Byte signature */}
-            <div className="mt-3 flex justify-center items-center gap-2">
-              <div className="text-lg">🤖</div>
-              <div>
-                <div className="font-comic text-white text-sm">Byte</div>
-                <div className="font-body text-purple-light" style={{ fontSize: '0.6rem' }}>Chief AI Officer, LearnAI</div>
-              </div>
-            </div>
+            {/* Wax seal */}
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <g transform="translate(32 32)">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <path key={i} d="M0 -28 L6 -22 L-6 -22 Z" fill={S.coralDeep} stroke={S.ink} strokeWidth="1.5" transform={`rotate(${i * 30})`} />
+                ))}
+                <circle r="22" fill={S.coral} stroke={S.ink} strokeWidth="2.5" />
+                <text fontFamily="Bowlby One SC" fontSize="11" textAnchor="middle" y="-2" fill="#fff">LV</text>
+                <text fontFamily="Bowlby One SC" fontSize="14" textAnchor="middle" y="11" fill="#fff">3</text>
+              </g>
+            </svg>
           </div>
-        </motion.div>
+        </div>
+      </div>
 
-        {/* ── Action buttons ── */}
-        <div className="flex flex-col gap-3 pb-6">
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleShare}
-            className="btn-gold w-full text-xl py-4"
-          >
-            📤 SHARE MY CERTIFICATE!
-          </motion.button>
-
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/builder')}
-            className="btn-cyan w-full text-xl py-4"
-          >
-            🔨 KEEP BUILDING MY AGENT
-          </motion.button>
-
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/home')}
-            className="btn-purple w-full text-xl py-4"
-          >
-            🗺️ BACK TO MAP
-          </motion.button>
+      {/* CTAs */}
+      <div style={{ position: 'absolute', bottom: 24, left: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 5 }}>
+        <ComicButton size="lg" bg={S.ink} color="#fff" style={{ width: '100%' }} onClick={() => navigate('/home')}>
+          <Icon name="share" size={18} color="#fff" /> SHARE WITH A FRIEND
+        </ComicButton>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <ComicButton size="md" bg="#fff" color={S.ink} style={{ flex: 1 }} onClick={() => navigate('/home')}>
+            <Icon name="download" size={16} /> DOWNLOAD
+          </ComicButton>
+          <ComicButton size="md" bg={S.sun} color={S.ink} style={{ flex: 1 }} onClick={() => navigate('/home')}>
+            NEXT CHAPTER →
+          </ComicButton>
         </div>
       </div>
     </div>

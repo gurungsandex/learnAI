@@ -6,97 +6,75 @@ export default {
   ],
   theme: {
     extend: {
-      // ── LearnAI Comic Color Palette ─────────────────────────────────
+      // ── Sparky Comic Color Palette ─────────────────────────────────
       colors: {
-        bg: {
-          deep:  '#0A0714',
-          panel: '#130D24',
-          card:  '#1C1338',
-        },
-        purple: {
-          dark:  '#1E0A3C',
-          mid:   '#6B21A8',
-          light: '#A855F7',
-          glow:  '#C084FC',
-        },
-        gold:    '#FBBF24',
-        'gold-bright': '#FDE047',
-        cyan:    '#22D3EE',
-        pink:    '#EC4899',
-        green:   '#4ADE80',
-        coral:   '#FB7185',
-        orange:  '#FB923C',
-        sky:     '#38BDF8',
+        ink:        '#1B2A33',
+        'ink-soft': '#3E5460',
+        paper:      '#FFF6EC',
+        'paper-deep':'#F7E9D5',
+        cream:      '#FFE8D6',
+        coral:      '#FF7A6B',
+        'coral-deep':'#E55A4B',
+        peach:      '#FFB4A2',
+        blush:      '#FFCDB2',
+        mint:       '#A8DADC',
+        'mint-deep':'#7BC0C2',
+        navy:       '#457B9D',
+        'navy-deep':'#2D5C7C',
+        sun:        '#FFD23F',
+        'sun-deep': '#F2B600',
+        grass:      '#7DD87D',
+        'grass-deep':'#4FB14F',
+        rose:       '#E76F8C',
+        lilac:      '#B8A6E0',
+        lock:       '#9AA8B0',
       },
-      // ── Typography ────────────────────────────────────────────────────
+      // ── Typography ───────────────────────────────────────────────────
       fontFamily: {
-        comic: ['Bangers', 'cursive'],
-        body:  ['Nunito', 'sans-serif'],
+        display: ['"Bowlby One SC"', 'cursive'],
+        comic:   ['"Patrick Hand"', 'cursive'],
+        ui:      ['"Nunito"', 'sans-serif'],
+        sig:     ['"Caveat"', 'cursive'],
       },
-      // ── Animations ────────────────────────────────────────────────────
+      // ── Animations ───────────────────────────────────────────────────
       keyframes: {
-        'bounce-in': {
-          '0%':   { transform: 'scale(0)',    opacity: '0' },
-          '60%':  { transform: 'scale(1.15)', opacity: '1' },
-          '100%': { transform: 'scale(1)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%':      { transform: 'translateY(-8px)' },
-        },
-        'xp-glow': {
-          '0%, 100%': { boxShadow: '0 0 8px #FBBF24' },
-          '50%':      { boxShadow: '0 0 24px #FBBF24, 0 0 48px #FBBF24' },
-        },
-        'star-spin': {
-          from: { transform: 'rotate(0deg)' },
-          to:   { transform: 'rotate(360deg)' },
-        },
-        shake: {
-          '0%, 100%': { transform: 'translateX(0)' },
-          '20%':      { transform: 'translateX(-8px)' },
-          '60%':      { transform: 'translateX(8px)' },
-        },
-        'slide-up': {
-          '0%':   { transform: 'translateY(30px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)',    opacity: '1' },
-        },
-        'pop': {
-          '0%':   { transform: 'scale(0.8)', opacity: '0' },
-          '80%':  { transform: 'scale(1.05)' },
-          '100%': { transform: 'scale(1)',   opacity: '1' },
+        spkBob: {
+          '0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
+          '50%':      { transform: 'translateY(-6px) rotate(2deg)' },
         },
         pulse: {
-          '0%, 100%': { opacity: '1' },
-          '50%':      { opacity: '0.5' },
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%':      { transform: 'scale(1.06)' },
+        },
+        bubblePop: {
+          '0%':   { transform: 'scale(0.92)', opacity: '0' },
+          '100%': { transform: 'scale(1)',    opacity: '1' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%':      { transform: 'translateY(-8px)' },
         },
       },
       animation: {
-        'bounce-in':  'bounce-in 0.45s ease-out forwards',
-        float:        'float 3s ease-in-out infinite',
-        'xp-glow':    'xp-glow 2s ease-in-out infinite',
-        'star-spin':  'star-spin 4s linear infinite',
-        shake:        'shake 0.4s ease-in-out',
-        'slide-up':   'slide-up 0.4s ease-out forwards',
-        pop:          'pop 0.35s ease-out forwards',
-        pulse:        'pulse 2s ease-in-out infinite',
-      },
-      // ── Font weights (numeric aliases so font-700/800/900 work) ──────
-      fontWeight: {
-        '700': '700',
-        '800': '800',
-        '900': '900',
+        'spk-bob':    'spkBob 2.4s ease-in-out infinite',
+        pulse:        'pulse 1.6s ease-in-out infinite',
+        'bubble-pop': 'bubblePop 0.25s ease-out forwards',
+        float:        'float 2.6s ease-in-out infinite',
       },
       // ── Border radius ─────────────────────────────────────────────────
       borderRadius: {
-        comic: '14px',
+        sm:   '10px',
+        md:   '16px',
+        lg:   '22px',
+        xl:   '28px',
+        pill: '999px',
       },
-      // ── Box shadows ───────────────────────────────────────────────────
+      // ── Box shadows (ink shadows — never soft blur) ──────────────────
       boxShadow: {
-        comic:     '4px 4px 0px rgba(0,0,0,0.9)',
-        'comic-lg':'6px 6px 0px rgba(0,0,0,0.9)',
-        glow:      '0 0 20px rgba(251,191,36,0.5)',
-        'glow-cyan':'0 0 20px rgba(34,211,238,0.5)',
+        ink:    '0 4px 0 #1B2A33',
+        'ink-sm':'0 2px 0 #1B2A33',
+        'ink-lg':'0 6px 0 #1B2A33',
+        'ink-pressed':'0 1px 0 #1B2A33',
       },
     },
   },

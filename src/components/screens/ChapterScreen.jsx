@@ -1,369 +1,151 @@
-/**
- * ChapterScreen.jsx
- * Renders the comic panels, dialogue, and interaction for a chapter.
- * After completing the story + interaction, launches the mini-game.
- */
+// ChapterScreen.jsx – 4-beat story + goal choice block
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useGame } from '../../context/GameContext'
-import { getChapter } from '../../data/chapters'
-import Character from '../ui/Character'
-import { StarBurst } from '../ui/StarBurst'
+import { useNavigate } from 'react-router-dom'
+import { S } from '../../tokens'
+import { Sparky, Bug, KidMira } from '../ui/Characters'
+import { SpeechBubble, Icon } from '../ui/ComicPrimitives'
 
-// ── Panel background styles ────────────────────────────────────
-const BG_STYLES = {
-  school: { background: 'linear-gradient(135deg, #1a4a6b 0%, #0d2d42 100%)' },
-  street: { background: 'linear-gradient(135deg, #2d1f0d 0%, #1a0f00 100%)' },
-  city:   { background: 'linear-gradient(135deg, #0d1b2a 0%, #1a2e40 100%)' },
-  lab:    { background: 'linear-gradient(135deg, #1a0a2e 0%, #0a0514 100%)' },
-  space:  { background: 'linear-gradient(135deg, #000414 0%, #0a0028 100%)' },
-  sky:    { background: 'linear-gradient(135deg, #1a4060 0%, #0d2040 100%)' },
-  home:   { background: 'linear-gradient(135deg, #2d1f0d 0%, #1a120a 100%)' },
+const BEATS = [
+  { who: 'sparky', expr: 'excited', text: "Meet Mira. Her bedroom is a DISASTER. We're gonna build a tiny robot brain — an AGENT — to help her clean it up.", side: 'left' },
+  { who: 'mira',   expr: 'confused', text: "Wait. A robot can just… do my chores?", side: 'right' },
+  { who: 'sparky', expr: 'happy',   text: "Not exactly. An AGENT is a program with a GOAL. It looks, thinks, then acts. Over and over.", side: 'left' },
+  { who: 'bug',    expr: 'thinking', text: "Goal → Look → Think → Act. That's the loop, kid.", side: 'right' },
+]
+
+function BedroomScene() {
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 360 780" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0 }}>
+      <rect width="360" height="500" fill="#FFE0C2"/>
+      <g opacity="0.4">
+        {Array.from({ length: 30 }).map((_, i) => (
+          <circle key={i} cx={(i * 53) % 360} cy={(i * 71) % 500} r="3" fill={S.coral} />
+        ))}
+      </g>
+      <path d="M0 500 L360 500 L360 780 L0 780 Z" fill="#D9A87A"/>
+      <path d="M0 500 L360 500 L360 530 L0 530 Z" fill="#B7855A"/>
+      {/* window */}
+      <rect x="32" y="80" width="100" height="120" fill={S.mint} stroke={S.ink} strokeWidth="3"/>
+      <path d="M82 80 v120 M32 140 h100" stroke={S.ink} strokeWidth="3"/>
+      <rect x="22" y="74" width="120" height="14" fill={S.coralDeep} stroke={S.ink} strokeWidth="3"/>
+      {/* poster */}
+      <rect x="200" y="100" width="100" height="80" fill="#fff" stroke={S.ink} strokeWidth="3" transform="rotate(-3 250 140)"/>
+      <text x="250" y="135" fontFamily="Bowlby One SC, system-ui" fontSize="14" fill={S.coralDeep} textAnchor="middle" transform="rotate(-3 250 140)">AI RULES</text>
+      <circle cx="250" cy="155" r="14" fill={S.sun} stroke={S.ink} strokeWidth="2.5" transform="rotate(-3 250 140)"/>
+      {/* bed */}
+      <rect x="180" y="340" width="170" height="100" fill={S.coral} stroke={S.ink} strokeWidth="3" rx="6"/>
+      <rect x="180" y="340" width="170" height="30" fill={S.coralDeep} stroke={S.ink} strokeWidth="3" rx="6"/>
+      <rect x="195" y="320" width="50" height="30" fill="#fff" stroke={S.ink} strokeWidth="3" rx="8"/>
+      {/* floor clutter */}
+      <path d="M40 600 q-4 -16 18 -18 q22 -2 22 14 q0 16 -16 18 q-22 4 -24 -14z" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+      <path d="M50 600 h22" stroke={S.coral} strokeWidth="3"/>
+      <rect x="100" y="620" width="50" height="14" fill={S.mint} stroke={S.ink} strokeWidth="2.5" transform="rotate(-8 125 627)"/>
+      <circle cx="280" cy="640" r="22" fill={S.sun} stroke={S.ink} strokeWidth="2.5"/>
+      <path d="M280 618 q-12 8 -8 22 M280 618 q12 8 8 22" stroke={S.ink} strokeWidth="2" fill="none"/>
+      <path d="M40 700 l16 -10 l8 6 l16 -6 l10 14 l-12 8 l-12 -4 l-14 4 z" fill={S.lilac} stroke={S.ink} strokeWidth="2.5"/>
+      <rect x="200" y="700" width="30" height="30" rx="3" fill="#fff" stroke={S.ink} strokeWidth="2.5"/>
+      <path d="M230 708 q12 0 12 8 q0 8 -12 8" fill="none" stroke={S.ink} strokeWidth="2.5"/>
+    </svg>
+  )
+}
+
+function ChoiceButton({ children, onClick }) {
+  return (
+    <div
+      onClick={(e) => { e.stopPropagation(); onClick() }}
+      style={{
+        background: '#fff', border: `2.5px solid ${S.ink}`,
+        borderRadius: 16, padding: '12px 14px', boxShadow: `0 4px 0 ${S.ink}`,
+        fontFamily: S.fontUI, fontWeight: 700, fontSize: 15, color: S.ink,
+        cursor: 'pointer', textAlign: 'left',
+      }}
+    >
+      {children}
+    </div>
+  )
 }
 
 export default function ChapterScreen() {
-  const { id }     = useParams()
-  const navigate   = useNavigate()
-  const { state, addXP, completeChapter, earnBadge } = useGame()
+  const navigate = useNavigate()
+  const [beatIdx, setBeatIdx] = useState(0)
+  const [showChoice, setShowChoice] = useState(false)
+  const beat = BEATS[beatIdx]
 
-  const chapter = getChapter(id)
-
-  const [phase,         setPhase]         = useState('story')      // story | interaction | reward
-  const [panelIdx,      setPanelIdx]      = useState(0)
-  const [dialogueIdx,   setDialogueIdx]   = useState(0)
-  const [selectedItems, setSelectedItems] = useState([])
-  const [interChecked,  setInterChecked]  = useState(false)
-  const [interResult,   setInterResult]   = useState(null)         // 'correct' | 'wrong'
-  const [showXP,        setShowXP]        = useState(false)
-
-  if (!chapter) {
-    navigate('/home')
-    return null
+  function advance() {
+    if (showChoice) return
+    if (beatIdx < BEATS.length - 1) setBeatIdx(beatIdx + 1)
+    else setShowChoice(true)
   }
 
-  const currentPanel    = chapter.panels[panelIdx]
-  const allDialogue     = currentPanel?.dialogue ?? []
-  const currentDialogue = allDialogue[dialogueIdx]
-  const hasMoreDialogue = dialogueIdx < allDialogue.length - 1
-  const hasMorePanels   = panelIdx   < chapter.panels.length - 1
-  const bgStyle         = BG_STYLES[currentPanel?.bg] || BG_STYLES.space
-
-  // ── Tap to advance story ───────────────────────────────────
-  function advanceStory() {
-    if (hasMoreDialogue) {
-      setDialogueIdx(d => d + 1)
-    } else if (hasMorePanels) {
-      setPanelIdx(p => p + 1)
-      setDialogueIdx(0)
-    } else {
-      // Story done → go to interaction
-      setPhase('interaction')
-    }
-  }
-
-  // ── Toggle item in interaction ─────────────────────────────
-  function toggleItem(itemId) {
-    if (interChecked) return
-    setSelectedItems(prev =>
-      prev.includes(itemId) ? prev.filter(x => x !== itemId) : [...prev, itemId]
-    )
-  }
-
-  // ── Check interaction answers ──────────────────────────────
-  function checkInteraction() {
-    const correctIds = chapter.interaction.items.filter(i => i.isCorrect).map(i => i.id)
-    const isCorrect  =
-      correctIds.every(id => selectedItems.includes(id)) &&
-      selectedItems.every(id => correctIds.includes(id))
-
-    setInterChecked(true)
-    setInterResult(isCorrect ? 'correct' : 'partial')
-  }
-
-  // ── Finish chapter story → earn XP → launch mini-game ─────
-  function handleFinishInteraction() {
-    // Award story XP
-    addXP(Math.round(chapter.xpReward * 0.5))
-    earnBadge(chapter.badge.id)
-    setShowXP(true)
-  }
-
-  function handleXPDone() {
-    setShowXP(false)
-    navigate(`/minigame/${chapter.id}`)
-  }
-
-  // ── Progress indicator ──────────────────────────────────────
-  const totalSteps  = chapter.panels.length + 1   // panels + interaction
-  const currentStep = phase === 'story' ? panelIdx + 1 : chapter.panels.length + 1
-  const progress    = Math.round((currentStep / totalSteps) * 100)
+  const speakerColor = beat.who === 'sparky' ? S.navy : S.coralDeep
 
   return (
-    <div className="min-h-dvh bg-bg-deep flex flex-col">
+    <div
+      style={{ position: 'relative', width: '100%', height: '100dvh', background: '#FFEAD6', overflow: 'hidden' }}
+      onClick={advance}
+    >
+      <BedroomScene />
 
-      {/* ── XP reward burst ── */}
-      <StarBurst
-        show={showXP}
-        xp={Math.round(chapter.xpReward * 0.5)}
-        message={`${chapter.badge.emoji} ${chapter.badge.name} badge earned!`}
-        onDone={handleXPDone}
-      />
-
-      {/* ── Top bar ── */}
-      <div className="bg-bg-panel border-b-2 border-purple-dark px-4 py-2 flex items-center gap-3 sticky top-0 z-40">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => navigate('/home')}
-          className="w-9 h-9 rounded-full bg-purple-dark border-2 border-purple-mid flex items-center justify-center text-white font-comic text-lg"
+      {/* Top bar */}
+      <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'center', gap: 10, zIndex: 5 }}>
+        <div
+          onClick={(e) => { e.stopPropagation(); navigate('/home') }}
+          style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
         >
-          ←
-        </motion.button>
-
-        {/* Chapter title */}
-        <div className="flex-1">
-          <div className="font-comic text-base text-white leading-none">{chapter.title}</div>
-          <div className="font-body text-xs text-purple-light font-700">{chapter.subtitle}</div>
+          <Icon name="x" size={20} />
         </div>
-
-        {/* Chapter icon */}
-        <div className="text-2xl">{chapter.icon}</div>
+        <div style={{ flex: 1, height: 14, background: '#fff', border: `2.5px solid ${S.ink}`, borderRadius: 99, boxShadow: `0 3px 0 ${S.ink}`, overflow: 'hidden' }}>
+          <div style={{ width: `${(beatIdx + 1) / BEATS.length * 100}%`, height: '100%', background: `linear-gradient(90deg, ${S.coral}, ${S.sun})`, transition: 'width .3s' }} />
+        </div>
+        <div style={{ background: S.ink, color: S.sun, fontFamily: S.fontDisplay, fontSize: 13, padding: '4px 10px', borderRadius: 99, border: `2px solid ${S.ink}` }}>3/12</div>
       </div>
 
-      {/* ── Progress bar ── */}
-      <div className="progress-track mx-4 mt-2">
-        <div className="progress-fill" style={{ width: `${progress}%` }} />
+      {/* Speaker portrait */}
+      <div style={{ position: 'absolute', bottom: 130, [beat.side === 'left' ? 'left' : 'right']: 8, zIndex: 4 }}>
+        {beat.who === 'sparky' && <Sparky size={130} expression={beat.expr} />}
+        {beat.who === 'bug'    && <Bug size={90} expression={beat.expr} />}
+        {beat.who === 'mira'   && <KidMira size={140} expression={beat.expr} />}
       </div>
 
-      <div className="flex-1 flex flex-col px-4 py-3 gap-3">
-
-        {/* ═══════════════════════════════════════════
-            STORY PHASE
-          ═══════════════════════════════════════════ */}
-        {phase === 'story' && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`panel-${panelIdx}`}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.25 }}
-              className="flex-1 flex flex-col"
-            >
-              {/* Comic panel */}
-              <motion.div
-                className="comic-panel-lg flex-1 flex flex-col relative cursor-pointer select-none"
-                style={bgStyle}
-                onClick={advanceStory}
-              >
-                {/* Halftone overlay */}
-                <div className="absolute inset-0 halftone-bg pointer-events-none" />
-
-                {/* Caption box (story narration) */}
-                {currentPanel?.caption && (
-                  <div className="absolute top-3 left-3 right-3 bg-gold border-2 border-black rounded-lg px-3 py-1.5 z-10">
-                    <p className="font-comic text-black text-sm text-center">
-                      {currentPanel.caption}
-                    </p>
-                  </div>
-                )}
-
-                {/* Panel number */}
-                <div className="absolute top-3 right-3 z-20">
-                  <span className="font-comic text-xs text-gold opacity-70">
-                    {panelIdx + 1}/{chapter.panels.length}
-                  </span>
-                </div>
-
-                {/* Characters area */}
-                <div className="flex-1 flex items-end justify-between px-4 pb-4 pt-12 relative z-10">
-
-                  {/* Left character */}
-                  <div className="flex flex-col items-center">
-                    {currentPanel?.characters?.left ? (
-                      <>
-                        <Character
-                          name={currentPanel.characters.left.name}
-                          emotion={currentPanel.characters.left.emotion}
-                          size={110}
-                          flip={false}
-                          avatarColor={state.avatarColor}
-                        />
-                        <span className="font-comic text-xs text-gold mt-1 capitalize">
-                          {currentPanel.characters.left.name === 'zara'
-                            ? state.playerName
-                            : 'Byte'}
-                        </span>
-                      </>
-                    ) : <div className="w-24" />}
-                  </div>
-
-                  {/* Right character */}
-                  <div className="flex flex-col items-center">
-                    {currentPanel?.characters?.right ? (
-                      <>
-                        <Character
-                          name={currentPanel.characters.right.name}
-                          emotion={currentPanel.characters.right.emotion}
-                          size={110}
-                          flip={true}
-                          avatarColor={state.avatarColor}
-                        />
-                        <span className="font-comic text-xs text-gold mt-1 capitalize">
-                          {currentPanel.characters.right.name === 'zara'
-                            ? state.playerName
-                            : 'Byte'}
-                        </span>
-                      </>
-                    ) : <div className="w-24" />}
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Dialogue bubbles */}
-              {currentDialogue && (
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`d-${panelIdx}-${dialogueIdx}`}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0  }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className={`speech-bubble mt-3 ${
-                      currentDialogue.speaker === 'zara' ? 'bubble-tail-left' : 'bubble-tail-right ml-8'
-                    }`}
-                  >
-                    <span
-                      className="font-body font-900 mr-1"
-                      style={{ color: currentDialogue.speaker === 'byte' ? '#0891B2' : '#9333EA' }}
-                    >
-                      {currentDialogue.speaker === 'zara' ? `${state.playerName}:` : 'Byte:'}
-                    </span>
-                    {currentDialogue.text}
-                  </motion.div>
-                </AnimatePresence>
-              )}
-
-              {/* Tap hint */}
-              <motion.div
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="text-center mt-2"
-              >
-                <span className="font-body text-purple-light text-xs font-700">
-                  {hasMoreDialogue || hasMorePanels ? 'TAP TO CONTINUE →' : 'TAP TO DO CHALLENGE →'}
-                </span>
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
-        )}
-
-        {/* ═══════════════════════════════════════════
-            INTERACTION PHASE
-          ═══════════════════════════════════════════ */}
-        {phase === 'interaction' && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex-1 flex flex-col"
-          >
-            {/* Prompt */}
-            <div className="card-comic mb-3">
-              <div className="flex items-start gap-3">
-                <Character name="byte" emotion="excited" size={64} />
-                <div className="flex-1">
-                  <p className="font-body font-900 text-white text-base leading-snug">
-                    {chapter.interaction.prompt}
-                  </p>
-                  <p className="font-body text-purple-light text-xs mt-1">
-                    💡 {chapter.interaction.helpText}
-                  </p>
-                </div>
+      {/* Speech bubble */}
+      {!showChoice && (
+        <div
+          key={beatIdx}
+          className="anim-pop"
+          style={{ position: 'absolute', bottom: 200, left: 16, right: 16, zIndex: 6 }}
+        >
+          <SpeechBubble bg="#fff" tail={beat.side} fontSize={17}>
+            <div style={{ fontFamily: S.fontComic }}>
+              <div style={{ fontFamily: S.fontDisplay, fontSize: 12, color: speakerColor, marginBottom: 4, letterSpacing: 0.5 }}>
+                {beat.who.toUpperCase()}
               </div>
+              {beat.text}
             </div>
+          </SpeechBubble>
+        </div>
+      )}
 
-            {/* Items grid */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {chapter.interaction.items.map(item => {
-                const isSelected = selectedItems.includes(item.id)
-                const showResult = interChecked
+      {/* Tap to continue hint */}
+      {!showChoice && (
+        <div
+          className="anim-pulse"
+          style={{ position: 'absolute', bottom: 88, right: 16, fontFamily: S.fontComic, fontSize: 13, color: S.ink, background: 'rgba(255,255,255,0.9)', padding: '4px 10px', borderRadius: 99, border: `2px solid ${S.ink}`, zIndex: 5 }}
+        >
+          tap to continue ›
+        </div>
+      )}
 
-                let borderColor = isSelected ? '#FBBF24' : '#4B3B7C'
-                let bgColor     = isSelected ? 'rgba(107,33,168,0.6)' : 'rgba(19,13,36,0.8)'
-                let overlay     = null
-
-                if (showResult) {
-                  if (item.isCorrect && isSelected) {
-                    borderColor = '#4ADE80'; bgColor = 'rgba(74,222,128,0.15)'; overlay = '✅'
-                  } else if (item.isCorrect && !isSelected) {
-                    borderColor = '#4ADE80'; bgColor = 'rgba(74,222,128,0.08)'; overlay = '💡'
-                  } else if (!item.isCorrect && isSelected) {
-                    borderColor = '#FB7185'; bgColor = 'rgba(251,113,133,0.15)'; overlay = '❌'
-                  }
-                }
-
-                return (
-                  <motion.button
-                    key={item.id}
-                    whileTap={!interChecked ? { scale: 0.93 } : {}}
-                    onClick={() => toggleItem(item.id)}
-                    className="rounded-comic border-2 p-3 flex items-center gap-2 transition-colors"
-                    style={{
-                      borderColor,
-                      backgroundColor: bgColor,
-                      boxShadow: isSelected ? `3px 3px 0 #111, 0 0 12px ${borderColor}60` : '3px 3px 0 #111',
-                    }}
-                  >
-                    <span className="text-2xl">{item.emoji}</span>
-                    <span className="font-body font-800 text-white text-sm flex-1 text-left">{item.label}</span>
-                    {overlay && <span className="text-lg">{overlay}</span>}
-                  </motion.button>
-                )
-              })}
-            </div>
-
-            {/* Result feedback */}
-            {interChecked && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`card-comic mb-3 text-center border-2
-                  ${interResult === 'correct' ? 'border-green' : 'border-gold'}`}
-              >
-                <div className="text-3xl mb-1">{interResult === 'correct' ? '🎉' : '👍'}</div>
-                <p className="font-comic text-white text-xl">
-                  {interResult === 'correct' ? 'PERFECT! Amazing!' : 'Good effort! Keep going!'}
-                </p>
-                <p className="font-body text-purple-light text-sm mt-1">
-                  The green ones are AI-powered examples!
-                </p>
-              </motion.div>
-            )}
-
-            {/* Check / Continue button */}
-            {!interChecked ? (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={checkInteraction}
-                disabled={selectedItems.length === 0}
-                className={`btn-gold text-xl py-4 w-full ${selectedItems.length === 0 ? 'opacity-40' : ''}`}
-              >
-                CHECK MY ANSWERS! ✓
-              </motion.button>
-            ) : (
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0  }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleFinishInteraction}
-                className="btn-gold text-xl py-4 w-full"
-              >
-                MINI GAME TIME! 🎮 →
-              </motion.button>
-            )}
-          </motion.div>
-        )}
-      </div>
+      {/* Choice block */}
+      {showChoice && (
+        <div style={{ position: 'absolute', bottom: 16, left: 12, right: 12, zIndex: 7 }}>
+          <div style={{ fontFamily: S.fontDisplay, fontSize: 14, color: S.ink, textAlign: 'center', background: '#fff', display: 'inline-block', padding: '4px 12px', borderRadius: 99, border: `2px solid ${S.ink}`, marginBottom: 8, marginLeft: '50%', transform: 'translateX(-50%)' }}>
+            What's Mira's goal?
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <ChoiceButton onClick={() => navigate('/minigame/3')}>🧦 Pick up everything off the floor</ChoiceButton>
+            <ChoiceButton onClick={() => navigate('/minigame/3')}>🎮 Order pizza for dinner</ChoiceButton>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

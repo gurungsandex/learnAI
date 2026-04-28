@@ -1,235 +1,137 @@
-/**
- * OnboardingScreen.jsx
- * 3-step onboarding: name → avatar color → meet characters
- */
+// OnboardingScreen.jsx – 2-step Sparky welcome + mode pick
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useGame } from '../../context/GameContext'
-import Character, { ZaraCharacter, ByteCharacter } from '../ui/Character'
+import { S } from '../../tokens'
+import { Sparky } from '../ui/Characters'
+import { ComicButton, Icon, Halftone } from '../ui/ComicPrimitives'
 
-const AVATAR_COLORS = [
-  { label: 'Caramel',  value: '#F5A873' },
-  { label: 'Honey',    value: '#D4895E' },
-  { label: 'Cocoa',    value: '#9B6040' },
-  { label: 'Ebony',    value: '#5C3A28' },
-  { label: 'Rose',     value: '#F7C5A0' },
-  { label: 'Warm',     value: '#E8956D' },
-]
-
-const STEPS = ['name', 'avatar', 'meet']
+function ModeCard({ icon, title, sub, color, active, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '14px 16px', borderRadius: 18, cursor: 'pointer',
+        background: active ? color : '#fff',
+        border: `2.5px solid ${S.ink}`,
+        boxShadow: active ? `0 6px 0 ${S.ink}` : `0 4px 0 ${S.ink}`,
+        transform: active ? 'translateY(-2px)' : 'none',
+        transition: 'all .12s',
+      }}
+    >
+      <div style={{ width: 48, height: 48, borderRadius: 14, background: '#fff', border: `2.5px solid ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} size={24} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: S.fontDisplay, fontSize: 18, color: S.ink, letterSpacing: 0.5 }}>{title}</div>
+        <div style={{ fontFamily: S.fontComic, fontSize: 15, color: S.inkSoft }}>{sub}</div>
+      </div>
+      {active && (
+        <div style={{ width: 28, height: 28, borderRadius: 99, background: S.ink, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="check" size={18} color={S.sun} />
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function OnboardingScreen() {
-  const navigate  = useNavigate()
+  const navigate = useNavigate()
   const { setPlayer } = useGame()
+  const [step, setStep] = useState(0)
+  const [mode, setMode] = useState(null)
 
-  const [step,        setStep]        = useState(0)
-  const [playerName,  setPlayerName]  = useState('')
-  const [avatarColor, setAvatarColor] = useState('#F5A873')
-  const [nameError,   setNameError]   = useState('')
-
-  // ── Step handlers ──────────────────────────────────────────
-  function handleNameNext() {
-    const trimmed = playerName.trim()
-    if (!trimmed || trimmed.length < 2) {
-      setNameError('Enter at least 2 characters!')
-      return
-    }
-    setNameError('')
-    setStep(1)
-  }
-
-  function handleAvatarNext() {
-    setStep(2)
-  }
-
-  function handleFinish() {
-    setPlayer(playerName.trim(), avatarColor)
+  function finish() {
+    setPlayer('FOX_42', '#FFB4A2')
     navigate('/home', { replace: true })
   }
 
-  // ── Slide variants ─────────────────────────────────────────
-  const slide = {
-    initial:  { x: 80,  opacity: 0 },
-    animate:  { x: 0,   opacity: 1, transition: { type: 'spring', stiffness: 200, damping: 22 } },
-    exit:     { x: -80, opacity: 0, transition: { duration: 0.2 } },
+  // ── Step 0: Welcome ──────────────────────────────────────────
+  if (step === 0) {
+    return (
+      <div style={{ position: 'relative', width: '100%', minHeight: '100dvh', background: S.paper, overflow: 'hidden' }}>
+        <Halftone color={S.coralDeep} op={0.05} size={5} />
+        <div style={{ padding: '40px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100dvh', boxSizing: 'border-box' }}>
+          {/* Skip */}
+          <div
+            style={{ alignSelf: 'flex-end', fontFamily: S.fontUI, fontWeight: 700, color: S.inkSoft, fontSize: 14, cursor: 'pointer' }}
+            onClick={finish}
+          >
+            Skip
+          </div>
+
+          {/* Sun-burst + Sparky */}
+          <div style={{ position: 'relative', marginTop: 16 }}>
+            <svg width="280" height="280" style={{ position: 'absolute', top: -30, left: -50 }}>
+              <g transform="translate(140 140)">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <path key={i} d="M0 -130 L18 -90 L-18 -90 Z" fill={S.sun} stroke={S.ink} strokeWidth="2.5" transform={`rotate(${i * 30})`} />
+                ))}
+                <circle r="100" fill={S.cream} stroke={S.ink} strokeWidth="3" />
+              </g>
+            </svg>
+            <div style={{ position: 'relative', zIndex: 2 }} className="anim-bob">
+              <Sparky size={210} expression="excited" />
+            </div>
+          </div>
+
+          <div style={{ marginTop: 28, textAlign: 'center' }}>
+            <div style={{ fontFamily: S.fontDisplay, fontSize: 36, color: S.ink, letterSpacing: 1, lineHeight: 1 }}>HEY, IT'S SPARKY!</div>
+            <div style={{ fontFamily: S.fontComic, fontSize: 19, color: S.inkSoft, marginTop: 12, lineHeight: 1.3 }}>
+              I'm a robot who's bad at math but great at making friends. Wanna learn about AI together?
+            </div>
+          </div>
+
+          <div style={{ flex: 1 }} />
+          <ComicButton size="lg" bg={S.coral} style={{ width: '100%' }} onClick={() => setStep(1)}>
+            LET'S GO →
+          </ComicButton>
+        </div>
+      </div>
+    )
   }
 
+  // ── Step 1: Choose mode ──────────────────────────────────────
   return (
-    <div
-      className="min-h-dvh flex flex-col items-center relative overflow-hidden"
-      style={{ background: 'radial-gradient(ellipse at top, #1E0A3C 0%, #0A0714 70%)' }}
-    >
-      <div className="absolute inset-0 halftone-bg pointer-events-none" />
+    <div style={{ position: 'relative', width: '100%', minHeight: '100dvh', background: S.paper, overflow: 'hidden' }}>
+      <Halftone color={S.coralDeep} op={0.05} size={5} />
+      <div style={{ padding: '40px 24px 24px', display: 'flex', flexDirection: 'column', minHeight: '100dvh', boxSizing: 'border-box' }}>
+        {/* Back */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => setStep(0)}>
+          <Icon name="arrowback" size={22} />
+          <span style={{ fontFamily: S.fontUI, fontWeight: 800, color: S.ink }}>Back</span>
+        </div>
 
-      {/* ── Progress dots ── */}
-      <div className="flex gap-3 pt-10 pb-6 z-10">
-        {STEPS.map((_, i) => (
-          <div
-            key={i}
-            className={`w-3 h-3 rounded-full border-2 border-gold transition-all duration-300
-              ${i <= step ? 'bg-gold' : 'bg-transparent'}`}
+        {/* Progress dots */}
+        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 10 }}>
+          <div style={{ width: 28, height: 6, borderRadius: 99, background: S.lock }} />
+          <div style={{ width: 28, height: 6, borderRadius: 99, background: S.coral, border: `1.5px solid ${S.ink}` }} />
+        </div>
+
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
+          <Sparky size={120} expression="thinking" />
+          <div style={{ fontFamily: S.fontDisplay, fontSize: 26, lineHeight: 1.05, marginTop: 6, color: S.ink }}>HOW DO YOU LIKE TO LEARN?</div>
+          <div style={{ fontFamily: S.fontComic, fontSize: 16, color: S.inkSoft, marginTop: 6 }}>You can change this anytime.</div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 22 }}>
+          <ModeCard
+            active={mode === 'read'} icon="text" title="Read & Tap"
+            sub="Speech bubbles + comic panels" color={S.mint}
+            onClick={() => setMode('read')}
           />
-        ))}
-      </div>
+          <ModeCard
+            active={mode === 'voice'} icon="mic" title="Listen & Watch"
+            sub="Sparky reads everything aloud" color={S.peach}
+            onClick={() => setMode('voice')}
+          />
+        </div>
 
-      <div className="w-full max-w-sm px-6 z-10 flex-1 flex flex-col items-center justify-center">
-        <AnimatePresence mode="wait">
-
-          {/* ═══ STEP 0: Name ═══ */}
-          {step === 0 && (
-            <motion.div key="step-name" {...slide} className="w-full text-center">
-              <div className="text-6xl mb-4">👋</div>
-              <h1 className="font-comic text-4xl text-gold mb-2">HEY EXPLORER!</h1>
-              <p className="font-body font-700 text-purple-light mb-8">
-                What's your name, adventurer?
-              </p>
-
-              {/* Name input */}
-              <input
-                type="text"
-                value={playerName}
-                onChange={e => { setPlayerName(e.target.value); setNameError('') }}
-                onKeyDown={e => e.key === 'Enter' && handleNameNext()}
-                placeholder="Your name here..."
-                maxLength={20}
-                className="w-full bg-bg-panel border-4 border-purple-mid rounded-comic px-5 py-4
-                           font-body font-800 text-white text-xl text-center outline-none
-                           focus:border-gold transition-colors placeholder:text-purple-light placeholder:opacity-50"
-                autoFocus
-                autoComplete="off"
-              />
-
-              {nameError && (
-                <motion.p
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-coral font-body font-800 text-sm mt-2"
-                >
-                  ⚠️ {nameError}
-                </motion.p>
-              )}
-
-              <motion.button
-                whileTap={{ scale: 0.94 }}
-                onClick={handleNameNext}
-                className="btn-gold w-full mt-6 text-2xl py-4"
-              >
-                LET'S GO! →
-              </motion.button>
-            </motion.div>
-          )}
-
-          {/* ═══ STEP 1: Avatar Color ═══ */}
-          {step === 1 && (
-            <motion.div key="step-avatar" {...slide} className="w-full text-center">
-              <div className="mb-4">
-                <ZaraCharacter emotion="happy" size={130} skinColor={avatarColor} />
-              </div>
-              <h1 className="font-comic text-3xl text-gold mb-2">PICK YOUR LOOK!</h1>
-              <p className="font-body font-700 text-purple-light mb-6">
-                Choose Zara's skin color 🎨
-              </p>
-
-              {/* Color swatches */}
-              <div className="grid grid-cols-3 gap-3 mb-8">
-                {AVATAR_COLORS.map(c => (
-                  <motion.button
-                    key={c.value}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setAvatarColor(c.value)}
-                    className="relative rounded-comic border-4 py-4 font-body font-800 text-sm transition-all"
-                    style={{
-                      backgroundColor: c.value,
-                      borderColor: avatarColor === c.value ? '#FBBF24' : '#333',
-                      boxShadow: avatarColor === c.value ? '0 0 16px rgba(251,191,36,0.7)' : '3px 3px 0 #111',
-                      color: '#111',
-                    }}
-                  >
-                    {c.label}
-                    {avatarColor === c.value && (
-                      <span className="absolute top-1 right-1 text-xs">✓</span>
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-
-              <motion.button
-                whileTap={{ scale: 0.94 }}
-                onClick={handleAvatarNext}
-                className="btn-gold w-full text-2xl py-4"
-              >
-                LOOKS GREAT! →
-              </motion.button>
-            </motion.div>
-          )}
-
-          {/* ═══ STEP 2: Meet Characters ═══ */}
-          {step === 2 && (
-            <motion.div key="step-meet" {...slide} className="w-full text-center">
-              <h1 className="font-comic text-4xl text-gold mb-6">
-                YOUR TEAM! 🤝
-              </h1>
-
-              {/* Characters side by side */}
-              <div className="flex justify-center items-end gap-4 mb-6">
-                <motion.div
-                  initial={{ x: -40, opacity: 0 }}
-                  animate={{ x: 0,   opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex flex-col items-center"
-                >
-                  <ZaraCharacter emotion="excited" size={110} skinColor={avatarColor} />
-                  <div className="font-comic text-coral text-xl mt-2">{playerName}</div>
-                  <div className="font-body text-purple-light text-xs">The Explorer</div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.5, type: 'spring' }}
-                  className="font-comic text-gold text-3xl pb-10"
-                >
-                  +
-                </motion.div>
-
-                <motion.div
-                  initial={{ x: 40, opacity: 0 }}
-                  animate={{ x: 0,  opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="flex flex-col items-center animate-float"
-                >
-                  <ByteCharacter emotion="excited" size={100} />
-                  <div className="font-comic text-cyan text-xl mt-2">Byte</div>
-                  <div className="font-body text-purple-light text-xs">The AI Companion</div>
-                </motion.div>
-              </div>
-
-              {/* Speech bubble from Byte */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                className="speech-bubble mx-4 mb-6 text-base"
-              >
-                <span className="text-cyan font-900">Byte: </span>
-                "Hi {playerName}! Ready to learn how AI works — and BUILD one?! This is going to be EPIC! 🚀"
-              </motion.div>
-
-              <motion.button
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0  }}
-                transition={{ delay: 1.1 }}
-                whileTap={{ scale: 0.94 }}
-                onClick={handleFinish}
-                className="btn-gold w-full text-2xl py-4"
-              >
-                START ADVENTURE! 🚀
-              </motion.button>
-            </motion.div>
-          )}
-
-        </AnimatePresence>
+        <div style={{ flex: 1 }} />
+        <ComicButton size="lg" bg={mode ? S.coral : '#D8D2C9'} disabled={!mode} style={{ width: '100%' }} onClick={finish}>
+          START THE STORY →
+        </ComicButton>
       </div>
     </div>
   )
