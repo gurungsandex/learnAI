@@ -1,7 +1,7 @@
 // ProfileScreen.jsx – YOUR JOURNEY (progress + badges)
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
-import { ComicButton, ComicCard, Icon, Halftone, BottomNav } from '../ui/ComicPrimitives'
+import { ComicButton, ComicCard, Icon, IconButton, Halftone, BottomNav } from '../ui/ComicPrimitives'
 
 const BADGES = [
   { id: 1, name: 'First Spark',   emoji: '⚡', got: true,  bg: S.sun },
@@ -48,16 +48,13 @@ export default function ProfileScreen() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            onClick={() => navigate('/home')}
-            style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-          >
+          <IconButton label="Back to home" onClick={() => navigate('/home')}>
             <Icon name="arrowback" size={20} />
-          </div>
+          </IconButton>
           <div style={{ flex: 1, fontFamily: S.fontDisplay, fontSize: 22, color: S.ink }}>YOUR JOURNEY</div>
-          <div style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <IconButton label="Settings">
             <Icon name="gear" size={18} />
-          </div>
+          </IconButton>
         </div>
 
         {/* Avatar card */}

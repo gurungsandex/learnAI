@@ -15,13 +15,18 @@ const CHAPTERS = [
 function ChapterNode({ c, onClick }) {
   const bg = c.state === 'done' ? S.sun : c.state === 'current' ? S.coral : '#D8D2C9'
   const isCurrent = c.state === 'current'
+  const label = c.label.replace('\n', ' ') + (c.state === 'locked' ? ' (locked)' : c.state === 'done' ? ' (completed)' : '')
   return (
-    <div
+    <button
       onClick={onClick}
+      disabled={c.state === 'locked'}
+      aria-label={label}
       style={{
         position: 'absolute', left: c.x, top: c.y, width: 96, marginLeft: -48,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         cursor: c.state === 'locked' ? 'not-allowed' : 'pointer', zIndex: 4,
+        background: 'none', border: 'none', padding: 0, fontFamily: 'inherit',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       {isCurrent && (
@@ -54,7 +59,7 @@ function ChapterNode({ c, onClick }) {
       }}>
         {c.label}
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -101,11 +106,11 @@ export default function HomeScreen() {
           <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>5</span>
         </ComicCard>
         <div style={{ flex: 1 }} />
-        <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+        <button onClick={() => navigate('/profile')} aria-label="View profile" style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
           <ComicCard bg={S.peach} padding="6px" radius={S.rPill}>
             <Icon name="profile" size={22} />
           </ComicCard>
-        </div>
+        </button>
       </div>
 
       {/* Winding dashed path */}

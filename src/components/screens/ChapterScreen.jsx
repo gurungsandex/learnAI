@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
 import { Sparky, Bug, KidMira } from '../ui/Characters'
-import { SpeechBubble, Icon } from '../ui/ComicPrimitives'
+import { SpeechBubble, Icon, IconButton } from '../ui/ComicPrimitives'
 
 const BEATS = [
   { who: 'sparky', expr: 'excited', text: "Meet Mira. Her bedroom is a DISASTER. We're gonna build a tiny robot brain — an AGENT — to help her clean it up.", side: 'left' },
@@ -50,17 +50,18 @@ function BedroomScene() {
 
 function ChoiceButton({ children, onClick }) {
   return (
-    <div
+    <button
       onClick={(e) => { e.stopPropagation(); onClick() }}
       style={{
         background: '#fff', border: `2.5px solid ${S.ink}`,
         borderRadius: 16, padding: '12px 14px', boxShadow: `0 4px 0 ${S.ink}`,
         fontFamily: S.fontUI, fontWeight: 700, fontSize: 15, color: S.ink,
-        cursor: 'pointer', textAlign: 'left',
+        cursor: 'pointer', textAlign: 'left', width: '100%',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       {children}
-    </div>
+    </button>
   )
 }
 
@@ -82,17 +83,18 @@ export default function ChapterScreen() {
     <div
       style={{ position: 'relative', width: '100%', height: '100dvh', background: '#FFEAD6', overflow: 'hidden' }}
       onClick={advance}
+      role={showChoice ? undefined : 'button'}
+      tabIndex={showChoice ? undefined : 0}
+      aria-label={showChoice ? undefined : 'Tap or press Enter to continue'}
+      onKeyDown={(e) => { if (!showChoice && (e.key === 'Enter' || e.key === ' ')) advance() }}
     >
       <BedroomScene />
 
       {/* Top bar */}
       <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'center', gap: 10, zIndex: 5 }}>
-        <div
-          onClick={(e) => { e.stopPropagation(); navigate('/home') }}
-          style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-        >
+        <IconButton label="Exit chapter" onClick={(e) => { e.stopPropagation(); navigate('/home') }}>
           <Icon name="x" size={20} />
-        </div>
+        </IconButton>
         <div style={{ flex: 1, height: 14, background: '#fff', border: `2.5px solid ${S.ink}`, borderRadius: 99, boxShadow: `0 3px 0 ${S.ink}`, overflow: 'hidden' }}>
           <div style={{ width: `${(beatIdx + 1) / BEATS.length * 100}%`, height: '100%', background: `linear-gradient(90deg, ${S.coral}, ${S.sun})`, transition: 'width .3s' }} />
         </div>

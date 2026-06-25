@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
 import { Sparky } from '../ui/Characters'
-import { ComicButton, ComicCard, Icon } from '../ui/ComicPrimitives'
+import { ComicButton, ComicCard, Icon, IconButton } from '../ui/ComicPrimitives'
 
 const OPTIONS = [
   { id: 'cleanup',   label: 'Pick up all the socks',  emoji: '🧦', sub: 'A clear, doable goal', good: true  },
@@ -27,12 +27,9 @@ export default function MiniGameScreen() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            onClick={() => navigate('/chapter/3')}
-            style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-          >
+          <IconButton label="Exit mini-game" onClick={() => navigate('/chapter/3')}>
             <Icon name="x" size={20} />
-          </div>
+          </IconButton>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: S.fontDisplay, fontSize: 14, color: S.coralDeep }}>MINI-GAME</div>
             <div style={{ fontFamily: S.fontDisplay, fontSize: 20, color: S.ink, lineHeight: 1.05 }}>SPOT THE GOAL</div>
@@ -57,9 +54,10 @@ export default function MiniGameScreen() {
         {/* Options */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 20 }}>
           {OPTIONS.map(o => (
-            <div
+            <button
               key={o.id}
               onClick={() => !picked && setPicked(o.id)}
+              disabled={!!picked}
               style={{
                 background: picked === o.id ? (o.good ? S.grass : '#FFD0CC') : '#fff',
                 border: `2.5px solid ${S.ink}`,
@@ -69,6 +67,8 @@ export default function MiniGameScreen() {
                 transition: 'all .14s',
                 cursor: picked ? 'default' : 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
+                width: '100%', textAlign: 'left', fontFamily: 'inherit',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               <div style={{ fontSize: 28 }}>{o.emoji}</div>
@@ -83,7 +83,7 @@ export default function MiniGameScreen() {
                   <Icon name={o.good ? 'check' : 'x'} size={20} color="#fff" />
                 </div>
               )}
-            </div>
+            </button>
           ))}
         </div>
 

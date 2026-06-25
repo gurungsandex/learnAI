@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
 import { Sparky } from '../ui/Characters'
-import { ComicButton, Icon, Halftone } from '../ui/ComicPrimitives'
+import { ComicButton, Icon, IconButton, Halftone } from '../ui/ComicPrimitives'
 
 const CONFETTI_COLORS = [S.sun, S.mint, S.lilac, '#fff']
 
@@ -32,10 +32,10 @@ export default function CertificateScreen() {
       </svg>
 
       {/* Close */}
-      <div style={{ position: 'absolute', top: 30, left: 16, zIndex: 10, cursor: 'pointer' }} onClick={() => navigate('/profile')}>
-        <div style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: 30, left: 16, zIndex: 10 }}>
+        <IconButton label="Close certificate" onClick={() => navigate('/profile')}>
           <Icon name="x" size={20} />
-        </div>
+        </IconButton>
       </div>
 
       {/* Chapter complete pill */}

@@ -49,6 +49,27 @@ export function ComicButton({ children, bg = S.coral, color = '#fff', onClick, s
   )
 }
 
+// ── IconButton ───────────────────────────────────────────────────
+export function IconButton({ children, onClick, label, size = 36, style = {} }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        width: size, height: size, borderRadius: 12,
+        background: '#fff', border: `2.5px solid ${S.ink}`,
+        boxShadow: `0 3px 0 ${S.ink}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+        WebkitTapHighlightColor: 'transparent',
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
 // ── ComicCard ────────────────────────────────────────────────────
 export function ComicCard({ children, bg = '#fff', style = {}, padding = 16, radius = S.rLg }) {
   return (
@@ -141,9 +162,11 @@ export function BottomNav({ active, onNav }) {
       justifyContent: 'space-around',
     }}>
       {items.map(it => (
-        <div
+        <button
           key={it.id}
           onClick={() => onNav(it.id)}
+          aria-label={it.label}
+          aria-current={active === it.id ? 'page' : undefined}
           style={{
             flex: 1,
             display: 'flex',
@@ -153,13 +176,15 @@ export function BottomNav({ active, onNav }) {
             padding: '6px 0',
             borderRadius: 14,
             cursor: 'pointer',
-            background: active === it.id ? S.sun : 'transparent',
             border: active === it.id ? `2px solid ${S.ink}` : '2px solid transparent',
+            background: active === it.id ? S.sun : 'transparent',
+            fontFamily: 'inherit',
+            WebkitTapHighlightColor: 'transparent',
           }}
         >
           <Icon name={it.icon} size={22} />
           <span style={{ fontFamily: S.fontUI, fontWeight: 800, fontSize: 11, color: S.ink }}>{it.label}</span>
-        </div>
+        </button>
       ))}
     </div>
   )
