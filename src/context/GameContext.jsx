@@ -9,6 +9,7 @@
  */
 import { createContext, useContext, useReducer, useEffect, useRef, useState } from 'react'
 import { api, apiEnabled, setAccessToken } from '../api/client'
+import { chapters } from '../data/chapters'
 
 // ── XP levels ────────────────────────────────────────────────
 export const XP_LEVELS = [
@@ -45,6 +46,32 @@ export function getWelcomeMessage(state) {
   if (gap === 2) return `Byte missed you yesterday! Hop back in to protect your streak 🤖`
   if (gap <= 6) return `It's been ${gap} days... Sparky's getting a little dusty without you ✨`
   return `${name}! Sparky thought you got eaten by a bug (the software kind). Ready for another chapter? 🐛`
+}
+
+// ── Personalized "what's next" suggestion ───────────────────────
+// Simple rule-based recommendation, no ML needed at this scale: prioritize
+// (1) replaying a chapter the player struggled with, (2) trying the AI
+// Builder once they've seen at least one chapter, (3) continuing the story.
+export function getRecommendation(state) {
+  const lowStarChapter = chapters.find(c => state.completedChapters.includes(c.id) && (state.chapterStars[c.id] ?? 3) === 1)
+  if (lowStarChapter) {
+    return { text: `Want another shot at "${lowStarChapter.title}"? Replaying boosts your stars! ⭐`, action: `/chapter/${lowStarChapter.id}` }
+  }
+
+  if (state.completedChapters.length > 0 && state.agentBlocks.length === 0) {
+    return { text: 'Ready to build your own AI agent? Try the AI Builder! 🤖', action: '/builder' }
+  }
+
+  const nextChapter = chapters.find(c => !state.completedChapters.includes(c.id) && state.completedChapters.includes(c.id - 1))
+  if (nextChapter) {
+    return { text: `Up next: "${nextChapter.title}" — let's keep going! 🚀`, action: `/chapter/${nextChapter.id}` }
+  }
+
+  if (state.hasCompletedGame) {
+    return { text: "You've finished every chapter — go see your certificate! 🏆", action: '/certificate' }
+  }
+
+  return null
 }
 
 // ── Initial State ─────────────────────────────────────────────

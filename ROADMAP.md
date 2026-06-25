@@ -111,6 +111,11 @@ prerequisite for nearly every other phase, so it is sequenced first.
   chapter's story begins; `MiniGameScreen` awards the badge if the quiz is finished within
   3 minutes of that stamp. No backend dependency; resets per attempt via `sessionStorage`
   rather than `localStorage` so it can't be gamed by leaving a stale timestamp from days ago.
+- ✅ Personalized recommendations — `getRecommendation` in `GameContext.jsx`, a simple
+  rule-based "what's next" suggestion (no ML needed at this scale): replay a chapter the
+  player scored 1 star on, try the AI Builder after their first chapter, continue to the
+  next unlocked chapter, or view the certificate once finished. Surfaced on `HomeScreen` in
+  the same banner slot as the re-engagement message (only one shown at a time).
 
 ## Phase 4: Security (after Phase 1 ships)
 - OWASP Top 10 pass on the new API: auth (A07), injection (A03), broken access control (A01).

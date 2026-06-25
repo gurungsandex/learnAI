@@ -1,7 +1,7 @@
 // HomeScreen.jsx – winding game map driven by chapters.js + GameContext progress
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
-import { useGame, getWelcomeMessage } from '../../context/GameContext'
+import { useGame, getWelcomeMessage, getRecommendation } from '../../context/GameContext'
 import { chapters } from '../../data/chapters'
 import { Icon, ComicCard, Halftone, BottomNav } from '../ui/ComicPrimitives'
 
@@ -76,6 +76,7 @@ export default function HomeScreen() {
   const { state, isUnlocked } = useGame()
   const chapterNodes = buildChapterNodes(state.completedChapters, isUnlocked)
   const welcomeMessage = getWelcomeMessage(state)
+  const recommendation = getRecommendation(state)
 
   function handleNav(id) {
     if (id === 'profile') navigate('/profile')
@@ -130,6 +131,17 @@ export default function HomeScreen() {
             <div style={{ fontFamily: S.fontComic, fontSize: 13, color: S.ink, textAlign: 'center' }}>{welcomeMessage}</div>
           </ComicCard>
         </div>
+      )}
+
+      {!welcomeMessage && recommendation && (
+        <button
+          onClick={() => navigate(recommendation.action)}
+          style={{ position: 'absolute', top: 64, left: 12, right: 12, zIndex: 5, background: 'none', border: 'none', padding: 0, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
+        >
+          <ComicCard bg={S.lilac} padding="8px 12px" radius={14}>
+            <div style={{ fontFamily: S.fontComic, fontSize: 13, color: S.ink, textAlign: 'center' }}>{recommendation.text}</div>
+          </ComicCard>
+        </button>
       )}
 
       {/* Winding dashed path */}
