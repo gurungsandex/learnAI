@@ -137,6 +137,17 @@ deployed, so this is a desk review, not a penetration test):**
 - Still open, deferred until real infra exists: secrets currently only validated as
   "present" at boot (`index.js`); a secret manager / rotation policy is a deployment-time
   concern, not a code-review one.
+- 🔧 Fixed: `DELETE /account` deleted the parent row but left the `refresh_token` cookie set
+  on the client — added `res.clearCookie('refresh_token')` so a deleted account's browser
+  session can't keep presenting a now-orphaned refresh token.
+- Still open: refresh tokens have no revocation mechanism (no token family/denylist table) —
+  a stolen refresh token stays valid for its full 30-day life even after logout elsewhere.
+  Worth a `refresh_tokens` table (id, parent_id, issued_at, revoked_at) before launch if the
+  threat model includes shared/public devices, which it likely does for a kids' app used on
+  shared family tablets.
+- Still open: no email verification on registration — anyone can register with an email they
+  don't own. Low risk pre-launch (no sensitive data tied to email beyond login), but should be
+  added before relying on email for account recovery at scale.
 
 ## Phase 5: Privacy & Compliance (after Phase 1 ships)
 - ✅ `PRIVACY.md` and `TERMS.md` drafted — written against what the app actually does today

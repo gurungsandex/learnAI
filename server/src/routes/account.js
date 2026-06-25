@@ -27,5 +27,6 @@ accountRouter.get('/export', async (req, res) => {
 accountRouter.delete('/', async (req, res) => {
   await logEvent('account_deleted', { parentId: req.parentId, ip: req.ip })
   await pool.query('DELETE FROM parents WHERE id = $1', [req.parentId])
+  res.clearCookie('refresh_token')
   res.status(204).end()
 })
