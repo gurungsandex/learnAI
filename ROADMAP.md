@@ -107,7 +107,10 @@ prerequisite for nearly every other phase, so it is sequenced first.
   "THIS WEEK" pill. Reads the new `xpLog`/`chapterLog` activity logs in `GameContext`
   (date-stamped entries, capped at 60 so localStorage can't grow unbounded) to show total XP,
   chapters completed, and a 7-day bar chart, all client-side — no backend dependency.
-- Still open: the `speedrunner` badge (needs a per-chapter timer, which doesn't exist yet).
+- ✅ `speedrunner` badge — `ChapterScreen` stamps a start time (`sessionStorage`) when a
+  chapter's story begins; `MiniGameScreen` awards the badge if the quiz is finished within
+  3 minutes of that stamp. No backend dependency; resets per attempt via `sessionStorage`
+  rather than `localStorage` so it can't be gamed by leaving a stale timestamp from days ago.
 
 ## Phase 4: Security (after Phase 1 ships)
 - OWASP Top 10 pass on the new API: auth (A07), injection (A03), broken access control (A01).

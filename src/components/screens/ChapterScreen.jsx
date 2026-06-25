@@ -66,6 +66,12 @@ export default function ChapterScreen() {
     if (!chapter || !isUnlocked(Number(id))) navigate('/home', { replace: true })
   }, [chapter, id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Marks when the player started this chapter's story, so MiniGameScreen can
+  // award the speedrunner badge if the quiz is finished within 3 minutes of it.
+  useEffect(() => {
+    if (chapter) sessionStorage.setItem(`chapterStart_${chapter.id}`, String(Date.now()))
+  }, [chapter])
+
   if (!chapter || !isUnlocked(Number(id))) return null
 
   const beat = beats[beatIdx]
