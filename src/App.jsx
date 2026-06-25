@@ -9,6 +9,7 @@ import ChapterScreen     from './components/screens/ChapterScreen'
 import MiniGameScreen    from './components/screens/MiniGameScreen'
 import AIBuilderScreen   from './components/screens/AIBuilderScreen'
 import ProfileScreen     from './components/screens/ProfileScreen'
+import WeeklySummaryScreen from './components/screens/WeeklySummaryScreen'
 import CertificateScreen from './components/screens/CertificateScreen'
 
 // When no backend is configured, the app behaves exactly as before
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/minigame/:id" element={<RequireAuth><MiniGameScreen /></RequireAuth>} />
         <Route path="/builder"      element={<RequireAuth><AIBuilderScreen /></RequireAuth>} />
         <Route path="/profile"      element={<RequireAuth><ProfileScreen /></RequireAuth>} />
+        <Route path="/weekly-summary" element={<RequireAuth><WeeklySummaryScreen /></RequireAuth>} />
         <Route path="/certificate"  element={<RequireAuth><CertificateScreen /></RequireAuth>} />
         <Route path="*"             element={<Navigate to="/" replace />} />
       </Routes>

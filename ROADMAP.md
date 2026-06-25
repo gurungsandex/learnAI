@@ -103,8 +103,11 @@ prerequisite for nearly every other phase, so it is sequenced first.
   XP awarded for a chapter completion and shows a dedicated "LEVEL UP!" card naming the new
   title (`getLevel` from `GameContext`) when a level boundary is crossed, distinct from the
   existing badge/star celebration.
-- Still open: weekly summary screen, and the `speedrunner` badge (needs a per-chapter timer,
-  which doesn't exist yet).
+- ✅ Weekly summary screen — `WeeklySummaryScreen.jsx`, reachable from `ProfileScreen` via a
+  "THIS WEEK" pill. Reads the new `xpLog`/`chapterLog` activity logs in `GameContext`
+  (date-stamped entries, capped at 60 so localStorage can't grow unbounded) to show total XP,
+  chapters completed, and a 7-day bar chart, all client-side — no backend dependency.
+- Still open: the `speedrunner` badge (needs a per-chapter timer, which doesn't exist yet).
 
 ## Phase 4: Security (after Phase 1 ships)
 - OWASP Top 10 pass on the new API: auth (A07), injection (A03), broken access control (A01).

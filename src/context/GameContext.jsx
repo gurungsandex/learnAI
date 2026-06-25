@@ -68,6 +68,11 @@ const initialState = {
   streakCount:        0,           // consecutive days with a completed chapter
   streakFreebieUsedOn: null,       // 'YYYY-MM-DD' the last streak-protection freebie was spent
 
+  // Per-day activity log powering the weekly summary screen. Capped to the
+  // most recent 60 entries so it can't grow unbounded in localStorage.
+  xpLog:              [],          // [{ date: 'YYYY-MM-DD', amount }]
+  chapterLog:         [],          // [{ date: 'YYYY-MM-DD', chapterId }] — one entry per chapter, first-completion only
+
   childId:            null,        // backend child_profiles.id, set once a parent is signed in
 }
 
@@ -108,12 +113,17 @@ function reducer(state, action) {
       return { ...state, playerName: action.name, avatarColor: action.color, onboardingDone: true }
 
     case 'ADD_XP':
-      return { ...state, xp: state.xp + action.amount }
+      return {
+        ...state,
+        xp: state.xp + action.amount,
+        xpLog: [...state.xpLog, { date: todayStr(), amount: action.amount }].slice(-60),
+      }
 
     case 'COMPLETE_CHAPTER': {
       const already = state.completedChapters.includes(action.id)
       const newCompleted = already ? state.completedChapters : [...state.completedChapters, action.id]
       const newStars = { ...state.chapterStars, [action.id]: action.stars ?? 3 }
+      const newChapterLog = already ? state.chapterLog : [...state.chapterLog, { date: todayStr(), chapterId: action.id }].slice(-60)
       const isFinished = newCompleted.length >= 8
 
       const today = todayStr()
@@ -143,6 +153,7 @@ function reducer(state, action) {
         streakCount,
         streakFreebieUsedOn,
         badges: newBadges,
+        chapterLog: newChapterLog,
       }
     }
 

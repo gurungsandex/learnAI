@@ -71,9 +71,15 @@ export default function ProfileScreen() {
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: S.fontDisplay, fontSize: 20, color: S.ink, lineHeight: 1 }}>{state.playerName || 'EXPLORER'}</div>
               <div style={{ fontFamily: S.fontComic, fontSize: 14, color: S.inkSoft }}>{level.title}</div>
-              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
                 <Pill icon="bolt" label={`${state.xp} XP`} bg={S.sun} />
                 <Pill icon="fire" label={`${state.streakCount} day streak`} bg="#fff" />
+                <button
+                  onClick={() => navigate('/weekly-summary')}
+                  style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <Pill icon="arrow" label="THIS WEEK" bg={S.mint} />
+                </button>
               </div>
             </div>
           </div>
