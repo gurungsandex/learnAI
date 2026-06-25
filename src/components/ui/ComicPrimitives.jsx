@@ -50,7 +50,7 @@ export function ComicButton({ children, bg = S.coral, color = '#fff', onClick, s
 }
 
 // ── IconButton ───────────────────────────────────────────────────
-export function IconButton({ children, onClick, label, size = 36, style = {} }) {
+export function IconButton({ children, onClick, label, size = 44, style = {} }) {
   return (
     <button
       onClick={onClick}

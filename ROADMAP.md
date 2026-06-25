@@ -58,7 +58,14 @@ prerequisite for nearly every other phase, so it is sequenced first.
 - Accessibility pass: keyboard navigation through comic panels, ARIA labels on icon-only
   buttons (`lucide-react` icons), color-contrast check against WCAG AA, reduced-motion
   fallback for `framer-motion` animations.
-- Mobile responsiveness pass on the 7 existing screens.
+- ✅ Mobile responsiveness verified: `#root` is already capped at `max-width: 480px` and
+  centered (`index.css`), so the app renders as a fixed-width mobile card rather than
+  stretching on desktop — confirmed via Playwright screenshots at 320×568 (smallest common
+  phone width, no horizontal overflow on Home/Profile) and 1440×900 (desktop, correctly
+  centered, not stretched).
+- ✅ Fixed: `IconButton`'s default tap target was 36px, under the 44px minimum recommended by
+  WCAG 2.5.5 / Apple HIG for touch targets — bumped the default to 44px (`ComicPrimitives.jsx`).
+  Used for every back/close/settings icon button across all 7 screens.
 
 ## Phase 3: Gamification & Retention
 - ✅ Daily streak counter — client-side (`GameContext`), using the device clock; will move to
