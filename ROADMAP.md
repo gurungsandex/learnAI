@@ -99,8 +99,11 @@ prerequisite for nearly every other phase, so it is sequenced first.
   unreachable, and the rule cap was hardcoded to 4, one below the badge's own threshold.
   Running the agent now persists the program to `GameContext.agentBlocks` and the rule cap
   is 5, so `builder_pro` is actually obtainable.
-- Still open: weekly summary screen, milestone celebrations beyond the existing
-  end-of-chapter/certificate screens, and the `speedrunner` badge (needs a per-chapter timer,
+- ✅ Level-up milestone celebration — `MiniGameScreen` now compares level before/after the
+  XP awarded for a chapter completion and shows a dedicated "LEVEL UP!" card naming the new
+  title (`getLevel` from `GameContext`) when a level boundary is crossed, distinct from the
+  existing badge/star celebration.
+- Still open: weekly summary screen, and the `speedrunner` badge (needs a per-chapter timer,
   which doesn't exist yet).
 
 ## Phase 4: Security (after Phase 1 ships)

@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { S } from '../../tokens'
-import { useGame } from '../../context/GameContext'
+import { useGame, getLevel } from '../../context/GameContext'
 import { getChapter } from '../../data/chapters'
 import { Sparky } from '../ui/Characters'
 import { ComicButton, ComicCard, Icon, IconButton } from '../ui/ComicPrimitives'
@@ -10,7 +10,7 @@ import { ComicButton, ComicCard, Icon, IconButton } from '../ui/ComicPrimitives'
 export default function MiniGameScreen() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const { isUnlocked, completeChapter, completeMiniGame, addXP, earnBadge } = useGame()
+  const { state, isUnlocked, completeChapter, completeMiniGame, addXP, earnBadge } = useGame()
   const chapter = useMemo(() => getChapter(id), [id])
   const questions = chapter?.miniGame?.questions ?? []
 
@@ -18,6 +18,7 @@ export default function MiniGameScreen() {
   const [picked, setPicked] = useState(null)
   const [correctCount, setCorrectCount] = useState(0)
   const [finished, setFinished] = useState(false)
+  const [levelUp, setLevelUp] = useState(null) // set to the new level's title when this completion crosses a level boundary
 
   useEffect(() => {
     if (!chapter || !isUnlocked(Number(id))) navigate('/home', { replace: true })
@@ -42,11 +43,15 @@ export default function MiniGameScreen() {
     }
     const ratio = correctCount / questions.length
     const stars = ratio === 1 ? 3 : ratio >= 0.5 ? 2 : 1
+    const levelBefore = getLevel(state.xp)
     completeChapter(chapter.id, stars)
     completeMiniGame(chapter.id)
-    addXP(chapter.xpReward + (chapter.miniGame.xpReward ?? 0))
+    const totalXp = chapter.xpReward + (chapter.miniGame.xpReward ?? 0)
+    addXP(totalXp)
     earnBadge(chapter.badge.id)
     if (ratio === 1) earnBadge('perfectionist')
+    const levelAfter = getLevel(state.xp + totalXp)
+    setLevelUp(levelAfter.level > levelBefore.level ? levelAfter : null)
     setFinished(true)
   }
 
@@ -148,6 +153,15 @@ export default function MiniGameScreen() {
             <div style={{ fontFamily: S.fontDisplay, fontSize: 22, color: S.ink }}>
               {correctCount}/{questions.length} correct!
             </div>
+            {levelUp && (
+              <div className="anim-pop">
+                <ComicCard bg={S.lilac} padding={14}>
+                  <div style={{ fontFamily: S.fontDisplay, fontSize: 18, color: S.ink }}>
+                    🎊 LEVEL UP! You're now a <span style={{ color: S.coralDeep }}>{levelUp.title}</span>!
+                  </div>
+                </ComicCard>
+              </div>
+            )}
             <ComicCard bg={S.sun} padding={14}>
               <div style={{ fontFamily: S.fontComic, fontSize: 15, color: S.ink }}>
                 <span style={{ fontSize: 22, marginRight: 6 }}>{chapter.badge.emoji}</span>
