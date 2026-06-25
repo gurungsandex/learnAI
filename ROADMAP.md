@@ -111,22 +111,28 @@ deployed, so this is a desk review, not a penetration test):**
   concern, not a code-review one.
 
 ## Phase 5: Privacy & Compliance (after Phase 1 ships)
-- Because the product targets children 8–12: require verifiable parental consent before
-  creating any account (COPPA), avoid collecting child PII beyond a display name.
-- Privacy Policy + Terms of Service drafted for a child-directed service (must disclose
-  COPPA compliance, data collected, no behavioral ad tracking).
-- Account deletion: deletes parent account + all linked child progress data.
-- Data export: JSON dump of a child's progress on request.
+- ✅ `PRIVACY.md` and `TERMS.md` drafted — written against what the app actually does today
+  (client-only, zero network calls) plus the exact commitments the existing-but-undeployed
+  `server/` code already implements (parent/child account model, COPPA-aligned consent,
+  cascading account deletion, JSON data export). Both are explicitly marked **draft / not in
+  effect** — they must not be published live until Phase 1 deploys and a real legal review
+  happens, since publishing privacy/compliance claims about systems that don't exist yet
+  would itself be misleading.
+- Still open: actual verifiable-parental-consent flow (needs the account system to exist),
+  a real contact address/process, and legal sign-off before either document goes live.
 - No third-party trackers/cookies for a children's product — flag this explicitly during
   Phase 6 analytics planning (COPPA forbids most third-party ad/analytics SDKs for child-
   directed apps; prefer first-party, non-fingerprinting usage stats).
 
 ## Phase 6: Production Readiness
-- Error boundary + structured logging (frontend + backend).
-- Monitoring/alerting on API error rate and auth failures.
-- Database backup schedule + restore drill.
-- Deployment: containerized backend + managed Postgres, static frontend on a CDN.
-- Launch checklist: all phases above signed off, before public release.
+- ✅ Frontend error boundary added (`src/components/ui/ErrorBoundary.jsx`, wrapping the whole
+  tree in `main.jsx`) — a render crash in one screen no longer blanks the whole app; shows a
+  friendly recovery screen and a way back to `/home`. `GameProvider`'s `localStorage` read/write
+  was already wrapped in try/catch (corrupt save data degrades to `initialState`, never crashes).
+- Still open: backend structured logging beyond `console.error` (needs a deployed target to
+  ship logs to), monitoring/alerting on API error rate and auth failures, database backup
+  schedule + restore drill, containerized backend + managed Postgres + CDN deployment, and a
+  final launch checklist — all gated on Phase 1 actually deploying.
 
 ## Sequencing rationale
 Phases 4–5 are explicitly gated on Phase 1 because there is currently no account, no
