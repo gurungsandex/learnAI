@@ -61,13 +61,19 @@ prerequisite for nearly every other phase, so it is sequenced first.
 - Mobile responsiveness pass on the 7 existing screens.
 
 ## Phase 3: Gamification & Retention
-- Daily streak counter (needs backend: server-side date tracking, not just local clock).
-- Streak-protection grace period (1 freebie per week) to avoid punishing kids for missed days.
-- Weekly summary + milestone celebration screens (reuse `CertificateScreen` pattern).
-- Re-engagement messaging tiers (friendly → humorous → warning → comeback) — implemented as
-  scheduled emails to the **parent's** address, never to a child directly, with no
-  guilt-based language, per the existing tone of the app.
-- In-app notifications only (no push/email to a child) until an account model exists.
+- ✅ Daily streak counter — client-side (`GameContext`), using the device clock; will move to
+  server-side date tracking once Phase 1 deploys (a device clock can be changed by the user).
+- ✅ Streak-protection grace period — missing exactly one day no longer resets the streak,
+  capped at one freebie per 7 days (`canUseStreakFreebie` in `GameContext.jsx`).
+- ✅ Re-engagement messaging — in-app only banner on `HomeScreen` (`getWelcomeMessage`),
+  friendly → light-teasing tone scaling with days away, never guilt-based. No push/email yet
+  since there's no account/notification backend — push/email to the **parent's** address
+  (never directly to a child) remains a Phase 1-dependent follow-up.
+- ✅ `streak_3` and `graduate` achievement badges are now actually awarded (were defined in
+  `badges.js` but never wired to any code path); `perfectionist` now awarded on a 100% quiz.
+- Still open: weekly summary screen, milestone celebrations beyond the existing
+  end-of-chapter/certificate screens, and `speedrunner`/`builder_pro` badges (need a timer and
+  AI Builder rule-count tracking respectively, neither of which exist yet).
 
 ## Phase 4: Security (after Phase 1 ships)
 - OWASP Top 10 pass on the new API: auth (A07), injection (A03), broken access control (A01).

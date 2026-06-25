@@ -1,7 +1,7 @@
 // HomeScreen.jsx – winding game map driven by chapters.js + GameContext progress
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
-import { useGame } from '../../context/GameContext'
+import { useGame, getWelcomeMessage } from '../../context/GameContext'
 import { chapters } from '../../data/chapters'
 import { Icon, ComicCard, Halftone, BottomNav } from '../ui/ComicPrimitives'
 
@@ -75,6 +75,7 @@ export default function HomeScreen() {
   const navigate = useNavigate()
   const { state, isUnlocked } = useGame()
   const chapterNodes = buildChapterNodes(state.completedChapters, isUnlocked)
+  const welcomeMessage = getWelcomeMessage(state)
 
   function handleNav(id) {
     if (id === 'profile') navigate('/profile')
@@ -122,6 +123,14 @@ export default function HomeScreen() {
           </ComicCard>
         </button>
       </div>
+
+      {welcomeMessage && (
+        <div style={{ position: 'absolute', top: 64, left: 12, right: 12, zIndex: 5 }}>
+          <ComicCard bg="#fff" padding="8px 12px" radius={14}>
+            <div style={{ fontFamily: S.fontComic, fontSize: 13, color: S.ink, textAlign: 'center' }}>{welcomeMessage}</div>
+          </ComicCard>
+        </div>
+      )}
 
       {/* Winding dashed path */}
       <svg width="100%" height="700" viewBox="0 0 360 700" style={{ position: 'absolute', top: 0, left: 0 }}>

@@ -32,6 +32,20 @@ export function xpToNextLevel(xp) {
   return { current: progress, needed, pct: Math.round((progress / needed) * 100) }
 }
 
+// ── Friendly re-engagement copy ─────────────────────────────────
+// In-app only (no push/email — there's no account/notification backend yet).
+// Tone is friendly → light teasing, never guilt-based, per the app's voice.
+export function getWelcomeMessage(state) {
+  if (!state.lastActiveDate || state.completedChapters.length === 0) return null
+  const gap = Math.round((new Date(todayStr()) - new Date(state.lastActiveDate)) / 86400000)
+  const name = state.playerName || 'Explorer'
+  if (gap <= 0) return null
+  if (gap === 1) return `Welcome back, ${name}! Keep that ${state.streakCount}-day streak going 🔥`
+  if (gap === 2) return `Byte missed you yesterday! Hop back in to protect your streak 🤖`
+  if (gap <= 6) return `It's been ${gap} days... Sparky's getting a little dusty without you ✨`
+  return `${name}! Sparky thought you got eaten by a bug (the software kind). Ready for another chapter? 🐛`
+}
+
 // ── Initial State ─────────────────────────────────────────────
 const initialState = {
   playerName:         '',          // set during onboarding
@@ -51,16 +65,29 @@ const initialState = {
 
   lastActiveDate:     null,        // 'YYYY-MM-DD', last day a chapter was completed
   streakCount:        0,           // consecutive days with a completed chapter
+  streakFreebieUsedOn: null,       // 'YYYY-MM-DD' the last streak-protection freebie was spent
 }
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
+function daysBetween(fromStr, toStr) {
+  const from = new Date(fromStr)
+  const to = new Date(toStr)
+  return Math.round((to - from) / 86400000)
+}
+
 function isYesterday(dateStr, today) {
-  const d = new Date(dateStr)
-  d.setDate(d.getDate() + 1)
-  return d.toISOString().slice(0, 10) === today
+  return dateStr != null && daysBetween(dateStr, today) === 1
+}
+
+// Streak-protection: missing exactly one day still counts as a kept streak,
+// but only once every 7 days, so a single bad day doesn't punish a kid while
+// still requiring real consistency to keep the freebie topped up.
+function canUseStreakFreebie(state, today) {
+  if (state.streakFreebieUsedOn === null) return true
+  return daysBetween(state.streakFreebieUsedOn, today) >= 7
 }
 
 // ── Reducer ───────────────────────────────────────────────────
@@ -81,9 +108,21 @@ function reducer(state, action) {
 
       const today = todayStr()
       let streakCount = state.streakCount
+      let streakFreebieUsedOn = state.streakFreebieUsedOn
       if (state.lastActiveDate !== today) {
-        streakCount = isYesterday(state.lastActiveDate, today) ? state.streakCount + 1 : 1
+        if (isYesterday(state.lastActiveDate, today)) {
+          streakCount = state.streakCount + 1
+        } else if (daysBetween(state.lastActiveDate, today) === 2 && canUseStreakFreebie(state, today)) {
+          streakCount = state.streakCount + 1
+          streakFreebieUsedOn = today
+        } else {
+          streakCount = 1
+        }
       }
+
+      const newBadges = [...state.badges]
+      if (streakCount >= 3 && !newBadges.includes('streak_3')) newBadges.push('streak_3')
+      if (isFinished && !newBadges.includes('graduate')) newBadges.push('graduate')
 
       return {
         ...state,
@@ -92,6 +131,8 @@ function reducer(state, action) {
         hasCompletedGame: isFinished,
         lastActiveDate: today,
         streakCount,
+        streakFreebieUsedOn,
+        badges: newBadges,
       }
     }
 

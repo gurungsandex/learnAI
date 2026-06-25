@@ -46,6 +46,7 @@ export default function MiniGameScreen() {
     completeMiniGame(chapter.id)
     addXP(chapter.xpReward + (chapter.miniGame.xpReward ?? 0))
     earnBadge(chapter.badge.id)
+    if (ratio === 1) earnBadge('perfectionist')
     setFinished(true)
   }
 
