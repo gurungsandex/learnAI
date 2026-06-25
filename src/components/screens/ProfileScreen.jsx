@@ -28,11 +28,17 @@ function StatBox({ emoji, value, label }) {
 
 export default function ProfileScreen() {
   const navigate = useNavigate()
-  const { state } = useGame()
+  const { state, apiEnabled, logout } = useGame()
 
   function handleNav(id) {
     if (id === 'home') navigate('/home')
     else if (id === 'builder') navigate('/builder')
+  }
+
+  async function handleSettings() {
+    if (!apiEnabled) return
+    await logout()
+    navigate('/auth', { replace: true })
   }
 
   const level = getLevel(state.xp)
@@ -51,7 +57,7 @@ export default function ProfileScreen() {
             <Icon name="arrowback" size={20} />
           </IconButton>
           <div style={{ flex: 1, fontFamily: S.fontDisplay, fontSize: 22, color: S.ink }}>YOUR JOURNEY</div>
-          <IconButton label="Settings">
+          <IconButton label={apiEnabled ? 'Sign out' : 'Settings'} onClick={handleSettings}>
             <Icon name="gear" size={18} />
           </IconButton>
         </div>

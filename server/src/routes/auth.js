@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { pool } from '../db/pool.js'
 import { logEvent } from '../db/audit.js'
 import { authLimiter } from '../middleware/rateLimit.js'
+import { sendPasswordResetEmail } from '../email/resend.js'
 
 export const authRouter = Router()
 authRouter.use(authLimiter)
@@ -106,7 +107,7 @@ authRouter.post('/password-reset/request', async (req, res) => {
       [rows[0].id, tokenHash]
     )
     await logEvent('password_reset_requested', { parentId: rows[0].id, ip: req.ip })
-    // TODO(Phase 1 wiring): send rawToken via email provider instead of logging.
+    await sendPasswordResetEmail(email.toLowerCase(), rawToken)
   }
   res.status(202).json({ message: 'If that email is registered, a reset link has been sent.' })
 })

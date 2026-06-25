@@ -45,8 +45,8 @@ export const api = {
   login:        (email, password) => request('/auth/login', { method: 'POST', body: { email, password } }),
   refresh:      () => request('/auth/refresh', { method: 'POST' }),
   logout:       () => request('/auth/logout', { method: 'POST' }),
-  requestReset: (email) => request('/auth/request-reset', { method: 'POST', body: { email } }),
-  completeReset:(token, password) => request('/auth/reset', { method: 'POST', body: { token, password } }),
+  requestReset: (email) => request('/auth/password-reset/request', { method: 'POST', body: { email } }),
+  completeReset:(token, newPassword) => request('/auth/password-reset/confirm', { method: 'POST', body: { token, newPassword } }),
 
   listChildren:    () => request('/children'),
   createChild:     (displayName, avatarColor) => request('/children', { method: 'POST', body: { displayName, avatarColor } }),

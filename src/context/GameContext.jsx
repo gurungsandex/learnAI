@@ -7,8 +7,8 @@
  * To add a new feature, add it to initialState + relevant action.
  * ─────────────────────────────────────────────────────────────
  */
-import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
-import { api, apiEnabled } from '../api/client'
+import { createContext, useContext, useReducer, useEffect, useRef, useState } from 'react'
+import { api, apiEnabled, setAccessToken } from '../api/client'
 
 // ── XP levels ────────────────────────────────────────────────
 export const XP_LEVELS = [
@@ -68,7 +68,14 @@ const initialState = {
   streakCount:        0,           // consecutive days with a completed chapter
   streakFreebieUsedOn: null,       // 'YYYY-MM-DD' the last streak-protection freebie was spent
 
-  childId:            null,        // backend child_profiles.id, set once Phase 1 auth/profile flow exists
+  childId:            null,        // backend child_profiles.id, set once a parent is signed in
+}
+
+// Not persisted to localStorage — re-derived from the refresh-token cookie
+// on every load via api.refresh(), so a stolen/stale save file can't forge a session.
+const initialAuthState = {
+  authChecked: false,   // becomes true once the silent-refresh attempt finishes
+  isAuthenticated: false,
 }
 
 function todayStr() {
@@ -164,6 +171,9 @@ function reducer(state, action) {
     case 'HYDRATE':
       return { ...state, ...action.progress }
 
+    case 'CHILD_CREATED':
+      return { ...state, childId: action.childId }
+
     case 'RESET':
       return { ...initialState }
 
@@ -187,6 +197,33 @@ export function GameProvider({ children }) {
   })()
 
   const [state, dispatch] = useReducer(reducer, saved)
+  const [auth, setAuth] = useState(initialAuthState)
+
+  // Silent re-login on load: if a valid refresh-token cookie exists, exchange
+  // it for a fresh access token without making the parent log in again.
+  useEffect(() => {
+    if (!apiEnabled) return setAuth({ authChecked: true, isAuthenticated: false })
+    api.refresh()
+      .then(({ accessToken }) => {
+        setAccessToken(accessToken)
+        setAuth({ authChecked: true, isAuthenticated: true })
+      })
+      .catch(() => setAuth({ authChecked: true, isAuthenticated: false }))
+  }, [])
+
+  // Once signed in, attach to an existing child profile or create the first
+  // one — this is what makes progress persist server-side instead of only
+  // in this browser's localStorage.
+  useEffect(() => {
+    if (!apiEnabled || !auth.isAuthenticated || state.childId) return
+    api.listChildren()
+      .then(async children => {
+        const existing = children[0]
+        const child = existing || await api.createChild(state.playerName || 'Explorer', state.avatarColor)
+        dispatch({ type: 'CHILD_CREATED', childId: child.id })
+      })
+      .catch(() => {})
+  }, [auth.isAuthenticated, state.childId])
 
   // Auto-save to localStorage whenever state changes
   useEffect(() => {
@@ -240,6 +277,25 @@ export function GameProvider({ children }) {
     setAgentBlocks:  (blocks)               => dispatch({ type: 'SET_AGENT_BLOCKS', blocks }),
     reset:           ()                     => dispatch({ type: 'RESET' }),
 
+    register: async (email, password) => {
+      const { accessToken } = await api.register(email, password)
+      setAccessToken(accessToken)
+      setAuth({ authChecked: true, isAuthenticated: true })
+    },
+    login: async (email, password) => {
+      const { accessToken } = await api.login(email, password)
+      setAccessToken(accessToken)
+      setAuth({ authChecked: true, isAuthenticated: true })
+    },
+    logout: async () => {
+      await api.logout().catch(() => {})
+      setAccessToken(null)
+      setAuth({ authChecked: true, isAuthenticated: false })
+      dispatch({ type: 'RESET' })
+    },
+    requestPasswordReset: (email) => api.requestReset(email),
+    confirmPasswordReset: (token, newPassword) => api.completeReset(token, newPassword),
+
     // Is chapter N unlocked? (chapter 1 always, others need previous done)
     isUnlocked: (id) => {
       if (id === 1) return true
@@ -248,7 +304,7 @@ export function GameProvider({ children }) {
   }
 
   return (
-    <GameContext.Provider value={{ state, ...actions }}>
+    <GameContext.Provider value={{ state, auth, apiEnabled, ...actions }}>
       {children}
     </GameContext.Provider>
   )
