@@ -8,6 +8,15 @@
   XP, completed chapters/minigames, badges, AI-builder blocks. Persisted only via
   `localStorage.setItem('learnai_save', ...)`.
 - Content is static data: 8 chapters (`src/data/chapters.js`), badge defs (`src/data/badges.js`).
+  As of this audit, `chapters.js` (story panels, sorting interactions, quiz questions,
+  badges for all 8 chapters) was fully written but **not wired to any screen** —
+  `ChapterScreen`/`MiniGameScreen`/`HomeScreen` were hardcoded to a single fixed demo
+  chapter regardless of the `:id` route param, and never read `chapters.js` or
+  `GameContext` state (XP/streak/badges shown were static placeholder numbers). This has
+  now been fixed: `HomeScreen` renders one node per chapter from `chapters.js` with real
+  lock/done state from `GameContext`; `ChapterScreen` renders that chapter's actual story
+  panels; `MiniGameScreen` renders that chapter's actual quiz and awards real XP/badges
+  via `GameContext` on completion.
 - 7 screens: Onboarding, Home, Chapter, MiniGame, AIBuilder, Profile, Certificate.
 - No auth, no accounts, no server, no database, no network calls at all.
 - No tests, no CI, no error boundary, no analytics, no monitoring.

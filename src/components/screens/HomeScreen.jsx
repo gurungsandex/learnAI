@@ -1,16 +1,24 @@
-// HomeScreen.jsx – winding game map with 6 chapter nodes
+// HomeScreen.jsx – winding game map driven by chapters.js + GameContext progress
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
+import { useGame } from '../../context/GameContext'
+import { chapters } from '../../data/chapters'
 import { Icon, ComicCard, Halftone, BottomNav } from '../ui/ComicPrimitives'
 
-const CHAPTERS = [
-  { id: 1, x: 60,  y: 580, label: 'WHAT IS\nAI?',        state: 'done',    icon: 'star' },
-  { id: 2, x: 220, y: 510, label: 'PROMPTS\n101',         state: 'done',    icon: 'star' },
-  { id: 3, x: 110, y: 410, label: 'MEET THE\nAGENT',      state: 'current', icon: 'play' },
-  { id: 4, x: 240, y: 305, label: 'GIVE IT\nA GOAL',      state: 'locked',  icon: 'lock' },
-  { id: 5, x: 90,  y: 210, label: 'TOOLS &\nMEMORY',      state: 'locked',  icon: 'lock' },
-  { id: 6, x: 230, y: 115, label: 'BUILD\nYOUR BOT',      state: 'locked',  icon: 'trophy' },
+const NODE_POS = [
+  { x: 60,  y: 640 }, { x: 220, y: 580 }, { x: 100, y: 500 }, { x: 240, y: 430 },
+  { x: 90,  y: 350 }, { x: 230, y: 270 }, { x: 100, y: 180 }, { x: 230, y: 90  },
 ]
+
+function buildChapterNodes(completedChapters, isUnlocked) {
+  return chapters.map((c, i) => {
+    const done = completedChapters.includes(c.id)
+    const unlocked = isUnlocked(c.id)
+    const state = done ? 'done' : unlocked ? 'current' : 'locked'
+    const icon = done ? 'star' : unlocked ? 'play' : 'lock'
+    return { id: c.id, ...NODE_POS[i], label: c.title.toUpperCase(), state, icon }
+  })
+}
 
 function ChapterNode({ c, onClick }) {
   const bg = c.state === 'done' ? S.sun : c.state === 'current' ? S.coral : '#D8D2C9'
@@ -65,6 +73,8 @@ function ChapterNode({ c, onClick }) {
 
 export default function HomeScreen() {
   const navigate = useNavigate()
+  const { state, isUnlocked } = useGame()
+  const chapterNodes = buildChapterNodes(state.completedChapters, isUnlocked)
 
   function handleNav(id) {
     if (id === 'profile') navigate('/profile')
@@ -99,11 +109,11 @@ export default function HomeScreen() {
       <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'center', gap: 10, zIndex: 5 }}>
         <ComicCard bg={S.sun} padding="6px 12px" radius={S.rPill} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon name="bolt" size={18} color={S.coralDeep} />
-          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>240 XP</span>
+          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>{state.xp} XP</span>
         </ComicCard>
         <ComicCard bg="#fff" padding="6px 12px" radius={S.rPill} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon name="fire" size={18} color={S.coralDeep} />
-          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>5</span>
+          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>{state.badges.length}</span>
         </ComicCard>
         <div style={{ flex: 1 }} />
         <button onClick={() => navigate('/profile')} aria-label="View profile" style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
@@ -122,11 +132,11 @@ export default function HomeScreen() {
       </svg>
 
       {/* Chapter nodes */}
-      {CHAPTERS.map(c => (
+      {chapterNodes.map(c => (
         <ChapterNode
           key={c.id}
           c={c}
-          onClick={() => c.state === 'current' && navigate('/chapter/3')}
+          onClick={() => c.state !== 'locked' && navigate(`/chapter/${c.id}`)}
         />
       ))}
 
