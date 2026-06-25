@@ -1,13 +1,16 @@
-// CertificateScreen.jsx – celebration + certificate card
+// CertificateScreen.jsx – celebration + certificate card, shown after all 8 chapters
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
+import { useGame, getLevel } from '../../context/GameContext'
 import { Sparky } from '../ui/Characters'
-import { ComicButton, Icon, Halftone } from '../ui/ComicPrimitives'
+import { ComicButton, Icon, IconButton, Halftone } from '../ui/ComicPrimitives'
 
 const CONFETTI_COLORS = [S.sun, S.mint, S.lilac, '#fff']
 
 export default function CertificateScreen() {
   const navigate = useNavigate()
+  const { state } = useGame()
+  const level = getLevel(state.xp)
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100dvh', overflow: 'hidden', background: `radial-gradient(circle at 50% 30%, ${S.sun} 0%, ${S.coral} 60%, ${S.coralDeep} 100%)` }}>
@@ -32,16 +35,16 @@ export default function CertificateScreen() {
       </svg>
 
       {/* Close */}
-      <div style={{ position: 'absolute', top: 30, left: 16, zIndex: 10, cursor: 'pointer' }} onClick={() => navigate('/profile')}>
-        <div style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: 30, left: 16, zIndex: 10 }}>
+        <IconButton label="Close certificate" onClick={() => navigate('/profile')}>
           <Icon name="x" size={20} />
-        </div>
+        </IconButton>
       </div>
 
       {/* Chapter complete pill */}
       <div style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', zIndex: 4 }}>
         <div style={{ fontFamily: S.fontDisplay, fontSize: 18, color: S.ink, background: '#fff', display: 'inline-block', padding: '4px 14px', borderRadius: 99, border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}` }}>
-          🎉 CHAPTER 1 COMPLETE
+          🎉 ALL 8 CHAPTERS COMPLETE
         </div>
       </div>
 
@@ -57,11 +60,11 @@ export default function CertificateScreen() {
           <span style={{ position: 'absolute', top: 8, right: 14 }}><Icon name="star" size={18} color={S.sun} /></span>
 
           <div style={{ textAlign: 'center', fontFamily: S.fontComic, fontSize: 12, color: S.inkSoft, letterSpacing: 2 }}>OFFICIAL · CERTIFICATE · OF · AGENT-OLOGY</div>
-          <div style={{ marginTop: 10, fontFamily: S.fontDisplay, fontSize: 26, color: S.coralDeep, textAlign: 'center', lineHeight: 1.05 }}>FOX_42</div>
+          <div style={{ marginTop: 10, fontFamily: S.fontDisplay, fontSize: 26, color: S.coralDeep, textAlign: 'center', lineHeight: 1.05 }}>{state.playerName || 'EXPLORER'}</div>
           <div style={{ fontFamily: S.fontComic, fontSize: 14, color: S.ink, textAlign: 'center', marginTop: 4 }}>has officially leveled up to</div>
-          <div style={{ fontFamily: S.fontDisplay, fontSize: 22, color: S.ink, textAlign: 'center', lineHeight: 1.05, marginTop: 4 }}>JUNIOR AGENT-MAKER</div>
+          <div style={{ fontFamily: S.fontDisplay, fontSize: 22, color: S.ink, textAlign: 'center', lineHeight: 1.05, marginTop: 4 }}>{level.title.toUpperCase()}</div>
           <div style={{ fontFamily: S.fontComic, fontSize: 13, color: S.inkSoft, textAlign: 'center', marginTop: 10, lineHeight: 1.3 }}>
-            For successfully teaching Tidy-Bot 3000 to clean a fictional bedroom and proving that <i>goal → look → think → act</i> beats yelling at the floor.
+            For completing all 8 chapters, earning {state.badges.length} badges, and proving that <i>goal → look → think → act</i> beats yelling at the floor.
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14 }}>
@@ -79,7 +82,7 @@ export default function CertificateScreen() {
                 ))}
                 <circle r="22" fill={S.coral} stroke={S.ink} strokeWidth="2.5" />
                 <text fontFamily="Bowlby One SC" fontSize="11" textAnchor="middle" y="-2" fill="#fff">LV</text>
-                <text fontFamily="Bowlby One SC" fontSize="14" textAnchor="middle" y="11" fill="#fff">3</text>
+                <text fontFamily="Bowlby One SC" fontSize="14" textAnchor="middle" y="11" fill="#fff">{level.level}</text>
               </g>
             </svg>
           </div>
@@ -96,7 +99,7 @@ export default function CertificateScreen() {
             <Icon name="download" size={16} /> DOWNLOAD
           </ComicButton>
           <ComicButton size="md" bg={S.sun} color={S.ink} style={{ flex: 1 }} onClick={() => navigate('/home')}>
-            NEXT CHAPTER →
+            BACK TO MAP →
           </ComicButton>
         </div>
       </div>

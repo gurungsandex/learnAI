@@ -2,8 +2,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
+import { useGame } from '../../context/GameContext'
 import { Sparky } from '../ui/Characters'
-import { ComicButton, ComicCard, Icon } from '../ui/ComicPrimitives'
+import { ComicButton, ComicCard, Icon, IconButton } from '../ui/ComicPrimitives'
+
+const MAX_RULES = 5 // matches the 'Builder Pro' badge requirement (5+ rules)
 
 const IF_OPTIONS = [
   { id: 'sock',  label: 'I see a sock',  emoji: '🧦' },
@@ -27,25 +30,29 @@ function BlockRow({ keyword, kwBg, options, value, onChange, highlight }) {
       <div style={{ background: kwBg, color: '#fff', fontFamily: S.fontDisplay, fontSize: 14, padding: '6px 10px', borderRadius: 10, border: `2px solid ${S.ink}`, letterSpacing: 0.5, minWidth: 56, textAlign: 'center' }}>
         {keyword}
       </div>
-      <div
+      <button
         onClick={() => setOpen(!open)}
-        style={{ flex: 1, background: highlight ? S.cream : '#F7F4EE', border: `2px solid ${S.ink}`, borderRadius: 12, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        style={{ flex: 1, background: highlight ? S.cream : '#F7F4EE', border: `2px solid ${S.ink}`, borderRadius: 12, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}
       >
         <div style={{ fontSize: 22 }}>{cur.emoji}</div>
-        <div style={{ flex: 1, fontFamily: S.fontUI, fontWeight: 700, fontSize: 14, color: S.ink }}>{cur.label}</div>
+        <div style={{ flex: 1, fontFamily: S.fontUI, fontWeight: 700, fontSize: 14, color: S.ink, textAlign: 'left' }}>{cur.label}</div>
         <Icon name="arrow" size={16} color={S.inkSoft} />
-      </div>
+      </button>
       {open && (
-        <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 10, background: '#fff', border: `2.5px solid ${S.ink}`, borderRadius: 14, boxShadow: `0 5px 0 ${S.ink}`, padding: 6, minWidth: 180 }}>
+        <div role="listbox" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 10, background: '#fff', border: `2.5px solid ${S.ink}`, borderRadius: 14, boxShadow: `0 5px 0 ${S.ink}`, padding: 6, minWidth: 180 }}>
           {options.map(o => (
-            <div
+            <button
               key={o.id}
+              role="option"
+              aria-selected={o.id === value}
               onClick={() => { onChange(o.id); setOpen(false) }}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', background: o.id === value ? S.cream : 'transparent' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', background: o.id === value ? S.cream : 'transparent', width: '100%', textAlign: 'left', fontFamily: 'inherit', border: 'none' }}
             >
               <div style={{ fontSize: 20 }}>{o.emoji}</div>
               <div style={{ fontFamily: S.fontUI, fontWeight: 700, fontSize: 14, color: S.ink }}>{o.label}</div>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -57,12 +64,14 @@ function RuleCard({ idx, rule, onChange, onRemove, running }) {
   return (
     <div style={{ position: 'relative' }}>
       {onRemove && (
-        <div
+        <IconButton
+          label={`Remove rule ${idx + 1}`}
           onClick={onRemove}
-          style={{ position: 'absolute', top: -8, right: -6, width: 26, height: 26, borderRadius: 99, background: '#fff', border: `2px solid ${S.ink}`, boxShadow: `0 2px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}
+          size={26}
+          style={{ position: 'absolute', top: -8, right: -6, borderRadius: 99, boxShadow: `0 2px 0 ${S.ink}`, zIndex: 2, border: `2px solid ${S.ink}` }}
         >
           <Icon name="x" size={14} />
-        </div>
+        </IconButton>
       )}
       <ComicCard bg="#fff" padding={12}>
         <BlockRow keyword="IF" kwBg={S.coral} options={IF_OPTIONS} value={rule.ifBlock} onChange={(v) => onChange(idx, 'ifBlock', v)} highlight={running} />
@@ -77,6 +86,7 @@ function RuleCard({ idx, rule, onChange, onRemove, running }) {
 
 export default function AIBuilderScreen() {
   const navigate = useNavigate()
+  const { setAgentBlocks, earnBadge } = useGame()
   const [program, setProgram] = useState([{ ifBlock: 'sock', thenBlock: 'pickup' }])
   const [running, setRunning] = useState(false)
 
@@ -84,10 +94,15 @@ export default function AIBuilderScreen() {
     setProgram(p => p.map((r, i) => i === idx ? { ...r, [key]: value } : r))
   }
   function addRule() {
-    if (program.length < 4) setProgram([...program, { ifBlock: 'book', thenBlock: 'shelf' }])
+    if (program.length < MAX_RULES) setProgram([...program, { ifBlock: 'book', thenBlock: 'shelf' }])
   }
   function removeRule(idx) {
     setProgram(p => p.filter((_, i) => i !== idx))
+  }
+  function run() {
+    setAgentBlocks(program)
+    if (program.length >= 5) earnBadge('builder_pro')
+    setRunning(true)
   }
 
   return (
@@ -96,12 +111,9 @@ export default function AIBuilderScreen() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            onClick={() => navigate('/home')}
-            style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-          >
+          <IconButton label="Back to home" onClick={() => navigate('/home')}>
             <Icon name="arrowback" size={20} />
-          </div>
+          </IconButton>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: S.fontDisplay, fontSize: 13, color: S.navy }}>AGENT BUILDER</div>
             <div style={{ fontFamily: S.fontDisplay, fontSize: 22, color: S.ink, lineHeight: 1 }}>TIDY-BOT 3000</div>
@@ -129,13 +141,13 @@ export default function AIBuilderScreen() {
               running={running}
             />
           ))}
-          {program.length < 4 && (
-            <div
+          {program.length < MAX_RULES && (
+            <button
               onClick={addRule}
-              style={{ border: `2.5px dashed ${S.ink}`, borderRadius: 18, padding: '14px', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: S.fontUI, fontWeight: 800, color: S.ink, cursor: 'pointer' }}
+              style={{ border: `2.5px dashed ${S.ink}`, borderRadius: 18, padding: '14px', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: S.fontUI, fontWeight: 800, color: S.ink, cursor: 'pointer', width: '100%', WebkitTapHighlightColor: 'transparent' }}
             >
               <Icon name="plus" size={18} /> ADD RULE
-            </div>
+            </button>
           )}
         </div>
 
@@ -158,7 +170,7 @@ export default function AIBuilderScreen() {
         <div style={{ marginTop: 16 }}>
           <ComicButton
             size="lg" bg={S.grass} color={S.ink} style={{ width: '100%' }}
-            onClick={() => running ? navigate('/profile') : setRunning(true)}
+            onClick={() => running ? navigate('/profile') : run()}
           >
             {running ? 'GREAT! NEXT →' : '▶ RUN MY AGENT'}
           </ComicButton>

@@ -8,8 +8,9 @@ import { ComicButton, Icon, Halftone } from '../ui/ComicPrimitives'
 
 function ModeCard({ icon, title, sub, color, active, onClick }) {
   return (
-    <div
+    <button
       onClick={onClick}
+      aria-pressed={active}
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '14px 16px', borderRadius: 18, cursor: 'pointer',
@@ -18,6 +19,8 @@ function ModeCard({ icon, title, sub, color, active, onClick }) {
         boxShadow: active ? `0 6px 0 ${S.ink}` : `0 4px 0 ${S.ink}`,
         transform: active ? 'translateY(-2px)' : 'none',
         transition: 'all .12s',
+        width: '100%', textAlign: 'left', fontFamily: 'inherit',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <div style={{ width: 48, height: 48, borderRadius: 14, background: '#fff', border: `2.5px solid ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -32,7 +35,7 @@ function ModeCard({ icon, title, sub, color, active, onClick }) {
           <Icon name="check" size={18} color={S.sun} />
         </div>
       )}
-    </div>
+    </button>
   )
 }
 
@@ -54,12 +57,12 @@ export default function OnboardingScreen() {
         <Halftone color={S.coralDeep} op={0.05} size={5} />
         <div style={{ padding: '40px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100dvh', boxSizing: 'border-box' }}>
           {/* Skip */}
-          <div
-            style={{ alignSelf: 'flex-end', fontFamily: S.fontUI, fontWeight: 700, color: S.inkSoft, fontSize: 14, cursor: 'pointer' }}
+          <button
+            style={{ alignSelf: 'flex-end', fontFamily: S.fontUI, fontWeight: 700, color: S.inkSoft, fontSize: 14, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
             onClick={finish}
           >
             Skip
-          </div>
+          </button>
 
           {/* Sun-burst + Sparky */}
           <div style={{ position: 'relative', marginTop: 16 }}>
@@ -98,10 +101,10 @@ export default function OnboardingScreen() {
       <Halftone color={S.coralDeep} op={0.05} size={5} />
       <div style={{ padding: '40px 24px 24px', display: 'flex', flexDirection: 'column', minHeight: '100dvh', boxSizing: 'border-box' }}>
         {/* Back */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => setStep(0)}>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', background: 'none', border: 'none', padding: 0, fontFamily: 'inherit' }} onClick={() => setStep(0)}>
           <Icon name="arrowback" size={22} />
           <span style={{ fontFamily: S.fontUI, fontWeight: 800, color: S.ink }}>Back</span>
-        </div>
+        </button>
 
         {/* Progress dots */}
         <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 10 }}>

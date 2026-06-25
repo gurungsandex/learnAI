@@ -1,16 +1,9 @@
 // ProfileScreen.jsx – YOUR JOURNEY (progress + badges)
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
-import { ComicButton, ComicCard, Icon, Halftone, BottomNav } from '../ui/ComicPrimitives'
-
-const BADGES = [
-  { id: 1, name: 'First Spark',   emoji: '⚡', got: true,  bg: S.sun },
-  { id: 2, name: 'Prompt Master', emoji: '💬', got: true,  bg: S.coral },
-  { id: 3, name: 'Goal Spotter',  emoji: '🎯', got: true,  bg: S.mint },
-  { id: 4, name: 'Bot Builder',   emoji: '🤖', got: false, bg: '#D8D2C9' },
-  { id: 5, name: 'Loop Wizard',   emoji: '🔁', got: false, bg: '#D8D2C9' },
-  { id: 6, name: 'Final Boss',    emoji: '🏆', got: false, bg: '#D8D2C9' },
-]
+import { useGame, getLevel, xpToNextLevel } from '../../context/GameContext'
+import { ALL_BADGES } from '../../data/badges'
+import { ComicButton, ComicCard, Icon, IconButton, Halftone, BottomNav } from '../ui/ComicPrimitives'
 
 function Pill({ icon, label, bg }) {
   return (
@@ -35,11 +28,23 @@ function StatBox({ emoji, value, label }) {
 
 export default function ProfileScreen() {
   const navigate = useNavigate()
+  const { state, apiEnabled, logout } = useGame()
 
   function handleNav(id) {
     if (id === 'home') navigate('/home')
     else if (id === 'builder') navigate('/builder')
   }
+
+  async function handleSettings() {
+    if (!apiEnabled) return
+    await logout()
+    navigate('/auth', { replace: true })
+  }
+
+  const level = getLevel(state.xp)
+  const { current, needed, pct } = xpToNextLevel(state.xp)
+  const totalStars = Object.values(state.chapterStars).reduce((a, b) => a + b, 0)
+  const badgeRows = ALL_BADGES.map(b => ({ ...b, got: state.badges.includes(b.id) }))
 
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100dvh', background: S.paper, overflow: 'hidden' }}>
@@ -48,30 +53,33 @@ export default function ProfileScreen() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            onClick={() => navigate('/home')}
-            style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-          >
+          <IconButton label="Back to home" onClick={() => navigate('/home')}>
             <Icon name="arrowback" size={20} />
-          </div>
+          </IconButton>
           <div style={{ flex: 1, fontFamily: S.fontDisplay, fontSize: 22, color: S.ink }}>YOUR JOURNEY</div>
-          <div style={{ width: 36, height: 36, borderRadius: 12, background: '#fff', border: `2.5px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <IconButton label={apiEnabled ? 'Sign out' : 'Settings'} onClick={handleSettings}>
             <Icon name="gear" size={18} />
-          </div>
+          </IconButton>
         </div>
 
         {/* Avatar card */}
         <ComicCard bg={S.peach} style={{ marginTop: 16 }} padding={16}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 76, height: 76, borderRadius: 99, background: '#fff', border: `3px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', fontSize: 40 }}>
-              🦊
+            <div style={{ width: 76, height: 76, borderRadius: 99, background: state.avatarColor || '#fff', border: `3px solid ${S.ink}`, boxShadow: `0 3px 0 ${S.ink}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', fontSize: 36 }}>
+              🤖
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: S.fontDisplay, fontSize: 20, color: S.ink, lineHeight: 1 }}>FOX_42</div>
-              <div style={{ fontFamily: S.fontComic, fontSize: 14, color: S.inkSoft }}>Apprentice Bot Builder</div>
-              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                <Pill icon="bolt" label="240 XP" bg={S.sun} />
-                <Pill icon="fire" label="5 day streak" bg="#fff" />
+              <div style={{ fontFamily: S.fontDisplay, fontSize: 20, color: S.ink, lineHeight: 1 }}>{state.playerName || 'EXPLORER'}</div>
+              <div style={{ fontFamily: S.fontComic, fontSize: 14, color: S.inkSoft }}>{level.title}</div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                <Pill icon="bolt" label={`${state.xp} XP`} bg={S.sun} />
+                <Pill icon="fire" label={`${state.streakCount} day streak`} bg="#fff" />
+                <button
+                  onClick={() => navigate('/weekly-summary')}
+                  style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <Pill icon="arrow" label="THIS WEEK" bg={S.mint} />
+                </button>
               </div>
             </div>
           </div>
@@ -79,30 +87,30 @@ export default function ProfileScreen() {
           {/* Level bar */}
           <div style={{ marginTop: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: S.fontDisplay, fontSize: 12, color: S.ink, marginBottom: 4 }}>
-              <span>LV 3</span><span>240 / 400</span>
+              <span>LV {level.level}</span><span>{current} / {needed}</span>
             </div>
             <div style={{ height: 16, background: '#fff', border: `2.5px solid ${S.ink}`, borderRadius: 99, overflow: 'hidden', boxShadow: 'inset 0 2px 0 rgba(0,0,0,0.08)' }}>
-              <div style={{ width: '60%', height: '100%', background: `linear-gradient(90deg, ${S.coral}, ${S.sun})` }} />
+              <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, ${S.coral}, ${S.sun})` }} />
             </div>
           </div>
         </ComicCard>
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginTop: 14 }}>
-          <StatBox emoji="📖" value="2" label="Chapters" />
-          <StatBox emoji="⭐" value="9" label="Stars" />
-          <StatBox emoji="🤖" value="1" label="Bots built" />
+          <StatBox emoji="📖" value={state.completedChapters.length} label="Chapters" />
+          <StatBox emoji="⭐" value={totalStars} label="Stars" />
+          <StatBox emoji="🤖" value={state.agentBlocks.length > 0 ? 1 : 0} label="Bots built" />
         </div>
 
         {/* Badges */}
         <div style={{ marginTop: 18 }}>
           <div style={{ fontFamily: S.fontDisplay, fontSize: 18, color: S.ink, marginBottom: 10 }}>BADGES</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-            {BADGES.map(b => (
+            {badgeRows.map(b => (
               <div
                 key={b.id}
                 style={{
-                  background: b.bg, border: `2.5px solid ${S.ink}`, borderRadius: 16,
+                  background: b.got ? S.sun : '#D8D2C9', border: `2.5px solid ${S.ink}`, borderRadius: 16,
                   boxShadow: `0 4px 0 ${S.ink}`, padding: '12px 8px',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                   opacity: b.got ? 1 : 0.6, position: 'relative',
@@ -120,11 +128,13 @@ export default function ProfileScreen() {
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
-          <ComicButton size="lg" bg={S.coral} style={{ width: '100%' }} onClick={() => navigate('/certificate')}>
-            🏆 SEE MY CERTIFICATE
-          </ComicButton>
-        </div>
+        {state.hasCompletedGame && (
+          <div style={{ marginTop: 18 }}>
+            <ComicButton size="lg" bg={S.coral} style={{ width: '100%' }} onClick={() => navigate('/certificate')}>
+              🏆 SEE MY CERTIFICATE
+            </ComicButton>
+          </div>
+        )}
       </div>
 
       <BottomNav active="profile" onNav={handleNav} />

@@ -4,27 +4,35 @@
  */
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useGame } from '../../context/GameContext'
 import { ByteCharacter } from '../ui/Character'
 
 export default function SplashScreen() {
   const navigate = useNavigate()
   const { state } = useGame()
+  const reduceMotion = useReducedMotion()
+
+  function goNext() {
+    navigate(state.onboardingDone ? '/home' : '/onboarding', { replace: true })
+  }
 
   // After 2.8s auto-navigate to onboarding OR home (if returning player)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate(state.onboardingDone ? '/home' : '/onboarding', { replace: true })
-    }, 2800)
+    const timer = setTimeout(goNext, 2800)
     return () => clearTimeout(timer)
-  }, [navigate, state.onboardingDone])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div
       className="min-h-dvh flex flex-col items-center justify-center relative overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at center, #1E0A3C 0%, #0A0714 70%)' }}
-      onClick={() => navigate(state.onboardingDone ? '/home' : '/onboarding', { replace: true })}
+      onClick={goNext}
+      role="button"
+      tabIndex={0}
+      aria-label="Tap or press Enter to continue"
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') goNext() }}
     >
       {/* ── Halftone background ── */}
       <div className="absolute inset-0 halftone-bg pointer-events-none" />
@@ -40,8 +48,8 @@ export default function SplashScreen() {
             fontSize: `${8 + (i % 4) * 4}px`,
             opacity: 0.6,
           }}
-          animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 1.5 + (i % 3), repeat: Infinity, delay: i * 0.15 }}
+          animate={reduceMotion ? { opacity: 0.8 } : { scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }}
+          transition={reduceMotion ? undefined : { duration: 1.5 + (i % 3), repeat: Infinity, delay: i * 0.15 }}
         >
           ★
         </motion.div>
