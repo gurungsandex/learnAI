@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/health", "destination": "/api/index" },
+    { "source": "/auth/:path*", "destination": "/api/index" },
+    { "source": "/children/:path*", "destination": "/api/index" },
+    { "source": "/account/:path*", "destination": "/api/index" }
+  ]
+}
