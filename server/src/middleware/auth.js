@@ -6,7 +6,7 @@ export function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ error: 'Missing access token' })
 
   try {
-    req.parentId = jwt.verify(token, process.env.JWT_ACCESS_SECRET).sub
+    req.parentId = jwt.verify(token, process.env.JWT_ACCESS_SECRET, { algorithms: ['HS256'] }).sub
     next()
   } catch {
     res.status(401).json({ error: 'Invalid or expired access token' })

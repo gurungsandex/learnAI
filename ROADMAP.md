@@ -77,6 +77,33 @@ prerequisite for nearly every other phase, so it is sequenced first.
   client-submitted XP amounts; compute server-side from completed chapter rewards).
 - Audit log for account-level events (login, password reset, data export, deletion).
 
+**Static code review of `server/` (no live infra required — code is written but not yet
+deployed, so this is a desk review, not a penetration test):**
+- ✅ Passwords hashed with bcrypt cost 12; login comparison is constant-shape (compares
+  against a dummy hash when the account doesn't exist) to resist timing-based user
+  enumeration.
+- ✅ Password reset tokens are single-use, SHA-256-hashed at rest, time-limited, and the
+  request endpoint always returns a generic 202 to avoid leaking which emails are registered.
+- ✅ Access tokens are short-lived (15m); refresh tokens are httpOnly + secure +
+  sameSite=strict cookies, not readable from JS.
+- ✅ All DB access uses parameterized queries (`pg` placeholders) — no string-built SQL found.
+- ✅ Child-data endpoints verify `parent_id` ownership on every query (`assertOwnsChild`)
+  before reading/writing — no broken-object-level-authorization path found.
+- ✅ XP rewards are computed server-side from a `CHAPTER_XP` whitelist keyed by chapter id,
+  never trusted from the client request body.
+- ✅ Audit log covers register/login/login_failed/password_reset_requested/
+  password_reset_completed/data_export/account_deleted.
+- 🔧 Fixed: `jwt.verify()` calls didn't pin an algorithm, leaving a (currently theoretical,
+  HS256-only) opening for algorithm-confusion if the library's defaults ever changed —
+  added `{ algorithms: ['HS256'] }` to both the access- and refresh-token verification.
+- 🔧 Fixed: no security headers middleware — added `helmet()` to `index.js` for baseline
+  protections (`X-Content-Type-Options`, `X-Frame-Options`, HSTS, etc.).
+- 🔧 Fixed: `accountRouter` (export/delete) had no rate limiting — added `apiLimiter` so the
+  data-export and account-deletion endpoints can't be hammered.
+- Still open, deferred until real infra exists: secrets currently only validated as
+  "present" at boot (`index.js`); a secret manager / rotation policy is a deployment-time
+  concern, not a code-review one.
+
 ## Phase 5: Privacy & Compliance (after Phase 1 ships)
 - Because the product targets children 8–12: require verifiable parental consent before
   creating any account (COPPA), avoid collecting child PII beyond a display name.

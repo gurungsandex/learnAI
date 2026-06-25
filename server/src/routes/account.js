@@ -1,10 +1,11 @@
 import { Router } from 'express'
 import { pool } from '../db/pool.js'
 import { requireAuth } from '../middleware/auth.js'
+import { apiLimiter } from '../middleware/rateLimit.js'
 import { logEvent } from '../db/audit.js'
 
 export const accountRouter = Router()
-accountRouter.use(requireAuth)
+accountRouter.use(requireAuth, apiLimiter)
 
 // Full export of everything tied to this parent account and its children,
 // to satisfy GDPR Art. 20 / CCPA right-to-access requests.
