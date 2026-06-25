@@ -113,7 +113,7 @@ export default function HomeScreen() {
         </ComicCard>
         <ComicCard bg="#fff" padding="6px 12px" radius={S.rPill} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon name="fire" size={18} color={S.coralDeep} />
-          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>{state.badges.length}</span>
+          <span style={{ fontFamily: S.fontDisplay, fontSize: 16, color: S.ink }}>{state.streakCount}</span>
         </ComicCard>
         <div style={{ flex: 1 }} />
         <button onClick={() => navigate('/profile')} aria-label="View profile" style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>

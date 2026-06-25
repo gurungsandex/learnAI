@@ -48,6 +48,19 @@ const initialState = {
   agentBlocks:        [],          // AI builder rules
 
   hasCompletedGame:   false,
+
+  lastActiveDate:     null,        // 'YYYY-MM-DD', last day a chapter was completed
+  streakCount:        0,           // consecutive days with a completed chapter
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function isYesterday(dateStr, today) {
+  const d = new Date(dateStr)
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().slice(0, 10) === today
 }
 
 // ── Reducer ───────────────────────────────────────────────────
@@ -65,11 +78,20 @@ function reducer(state, action) {
       const newCompleted = already ? state.completedChapters : [...state.completedChapters, action.id]
       const newStars = { ...state.chapterStars, [action.id]: action.stars ?? 3 }
       const isFinished = newCompleted.length >= 8
+
+      const today = todayStr()
+      let streakCount = state.streakCount
+      if (state.lastActiveDate !== today) {
+        streakCount = isYesterday(state.lastActiveDate, today) ? state.streakCount + 1 : 1
+      }
+
       return {
         ...state,
         completedChapters: newCompleted,
         chapterStars: newStars,
         hasCompletedGame: isFinished,
+        lastActiveDate: today,
+        streakCount,
       }
     }
 
