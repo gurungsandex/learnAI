@@ -48,6 +48,21 @@ prerequisite for nearly every other phase, so it is sequenced first.
 - REST or simple JSON API: `GET/PUT /progress`, `POST /auth/*`.
 - Migrate `GameContext` to sync with the API (optimistic local update + background sync),
   keeping localStorage as an offline cache, not the source of truth.
+- ✅ Frontend sync layer written ahead of deployment: `src/api/client.js` (fetch wrapper matching
+  the real routes in `server/src/routes/*.js` — register/login/refresh/logout/reset,
+  `listChildren`/`createChild`/`getChildProgress`/`completeChapter`, account export/delete) and
+  `GameContext.jsx`'s background-sync effects (hydrate from `getChildProgress` on mount, mirror
+  each new `completedChapters` entry to `completeChapter` so the server — not the client —
+  computes XP from `CHAPTER_XP`). Both are **inert no-ops today**: `apiEnabled` is false unless
+  `VITE_API_URL` is set (see `.env.example`), and sync additionally requires `state.childId`,
+  which nothing in the UI sets yet since there's no auth/profile-creation screen. Net effect:
+  zero behavior change for the current client-only app; flipping it on later requires only (a)
+  setting `VITE_API_URL` once the backend is deployed and (b) building the still-missing
+  login/profile-creation screens that populate `state.childId`. Verified `npm run build` still
+  succeeds with this layer present but disabled.
+- Still blocked on live infrastructure (hosting provider for Postgres + the API, an email
+  provider for password-reset delivery, and who provisions the accounts) — see open question to
+  the user; no further Phase 1 progress is possible without those decisions.
 
 ## Phase 2: Learning Experience
 - No backend dependency — can proceed in parallel with Phase 1 on the frontend.

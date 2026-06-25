@@ -7,7 +7,8 @@
  * To add a new feature, add it to initialState + relevant action.
  * ─────────────────────────────────────────────────────────────
  */
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
+import { api, apiEnabled } from '../api/client'
 
 // ── XP levels ────────────────────────────────────────────────
 export const XP_LEVELS = [
@@ -66,6 +67,8 @@ const initialState = {
   lastActiveDate:     null,        // 'YYYY-MM-DD', last day a chapter was completed
   streakCount:        0,           // consecutive days with a completed chapter
   streakFreebieUsedOn: null,       // 'YYYY-MM-DD' the last streak-protection freebie was spent
+
+  childId:            null,        // backend child_profiles.id, set once Phase 1 auth/profile flow exists
 }
 
 function todayStr() {
@@ -158,6 +161,9 @@ function reducer(state, action) {
     case 'SET_AGENT_BLOCKS':
       return { ...state, agentBlocks: action.blocks }
 
+    case 'HYDRATE':
+      return { ...state, ...action.progress }
+
     case 'RESET':
       return { ...initialState }
 
@@ -190,6 +196,38 @@ export function GameProvider({ children }) {
       // Storage full or unavailable – silently ignore
     }
   }, [state])
+
+  // Background sync to the backend, once one is configured (VITE_API_URL set)
+  // and a child profile has been created server-side (state.childId set by the
+  // Phase 1 auth/profile flow, which doesn't exist in the UI yet). Until both
+  // are true this is a complete no-op and localStorage remains authoritative.
+  useEffect(() => {
+    if (!apiEnabled || !state.childId) return
+    api.getChildProgress(state.childId)
+      .then(remote => remote && dispatch({
+        type: 'HYDRATE',
+        progress: {
+          xp: remote.xp,
+          completedChapters: remote.completed_chapters || [],
+          chapterStars: remote.chapter_stars || {},
+          lastActiveDate: remote.last_active_date,
+          streakCount: remote.streak_count,
+        },
+      }))
+      .catch(() => {}) // backend unreachable – keep local state
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.childId])
+
+  // Mirror chapter completions server-side. The server (not the client) is
+  // the source of truth for XP amounts — see CHAPTER_XP in server/src/data.
+  const lastSyncedChapter = useRef(null)
+  useEffect(() => {
+    if (!apiEnabled || !state.childId) return
+    const newest = state.completedChapters[state.completedChapters.length - 1]
+    if (newest == null || newest === lastSyncedChapter.current) return
+    lastSyncedChapter.current = newest
+    api.completeChapter(state.childId, newest, state.chapterStars[newest] ?? 3).catch(() => {})
+  }, [state.childId, state.completedChapters, state.chapterStars])
 
   // ── Convenience action helpers ─────────────────────────────
   const actions = {
