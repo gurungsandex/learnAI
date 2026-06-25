@@ -60,9 +60,17 @@ prerequisite for nearly every other phase, so it is sequenced first.
   setting `VITE_API_URL` once the backend is deployed and (b) building the still-missing
   login/profile-creation screens that populate `state.childId`. Verified `npm run build` still
   succeeds with this layer present but disabled.
-- Still blocked on live infrastructure (hosting provider for Postgres + the API, an email
-  provider for password-reset delivery, and who provisions the accounts) — see open question to
-  the user; no further Phase 1 progress is possible without those decisions.
+- ✅ **Live and verified.** Backend merged into the existing `learn-ai` Vercel project as
+  root-level serverless functions (`vercel.json` rewrites `/auth`, `/children`, `/account`,
+  `/health` to `api/index.js`, which re-exports `server/src/app.js`'s Express app), so frontend
+  and backend are same-origin under `https://learn-ai-gamma-nine.vercel.app` — no CORS, no
+  second Vercel project needed. Database is an existing Supabase Postgres project whose schema
+  already matched `server/src/db/schema.sql` exactly. `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`,
+  `DATABASE_URL`, and `VITE_API_URL` are set as Vercel environment variables. Verified live:
+  `GET /health` → `200 {"ok":true}`; `GET /auth/register` reaches the real Express route (confirmed
+  via `express-rate-limit` response headers) and correctly 404s on the wrong HTTP method.
+  Email delivery (`RESEND_API_KEY`/`EMAIL_FROM`) for password-reset is still unset — low priority
+  since password reset isn't on the critical path for a first real account/login test.
 
 ## Phase 2: Learning Experience
 - No backend dependency — can proceed in parallel with Phase 1 on the frontend.
