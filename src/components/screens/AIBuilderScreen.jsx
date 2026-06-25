@@ -2,8 +2,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { S } from '../../tokens'
+import { useGame } from '../../context/GameContext'
 import { Sparky } from '../ui/Characters'
 import { ComicButton, ComicCard, Icon, IconButton } from '../ui/ComicPrimitives'
+
+const MAX_RULES = 5 // matches the 'Builder Pro' badge requirement (5+ rules)
 
 const IF_OPTIONS = [
   { id: 'sock',  label: 'I see a sock',  emoji: '🧦' },
@@ -83,6 +86,7 @@ function RuleCard({ idx, rule, onChange, onRemove, running }) {
 
 export default function AIBuilderScreen() {
   const navigate = useNavigate()
+  const { setAgentBlocks, earnBadge } = useGame()
   const [program, setProgram] = useState([{ ifBlock: 'sock', thenBlock: 'pickup' }])
   const [running, setRunning] = useState(false)
 
@@ -90,10 +94,15 @@ export default function AIBuilderScreen() {
     setProgram(p => p.map((r, i) => i === idx ? { ...r, [key]: value } : r))
   }
   function addRule() {
-    if (program.length < 4) setProgram([...program, { ifBlock: 'book', thenBlock: 'shelf' }])
+    if (program.length < MAX_RULES) setProgram([...program, { ifBlock: 'book', thenBlock: 'shelf' }])
   }
   function removeRule(idx) {
     setProgram(p => p.filter((_, i) => i !== idx))
+  }
+  function run() {
+    setAgentBlocks(program)
+    if (program.length >= 5) earnBadge('builder_pro')
+    setRunning(true)
   }
 
   return (
@@ -132,7 +141,7 @@ export default function AIBuilderScreen() {
               running={running}
             />
           ))}
-          {program.length < 4 && (
+          {program.length < MAX_RULES && (
             <button
               onClick={addRule}
               style={{ border: `2.5px dashed ${S.ink}`, borderRadius: 18, padding: '14px', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: S.fontUI, fontWeight: 800, color: S.ink, cursor: 'pointer', width: '100%', WebkitTapHighlightColor: 'transparent' }}
@@ -161,7 +170,7 @@ export default function AIBuilderScreen() {
         <div style={{ marginTop: 16 }}>
           <ComicButton
             size="lg" bg={S.grass} color={S.ink} style={{ width: '100%' }}
-            onClick={() => running ? navigate('/profile') : setRunning(true)}
+            onClick={() => running ? navigate('/profile') : run()}
           >
             {running ? 'GREAT! NEXT →' : '▶ RUN MY AGENT'}
           </ComicButton>

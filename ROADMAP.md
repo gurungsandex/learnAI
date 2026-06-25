@@ -71,9 +71,15 @@ prerequisite for nearly every other phase, so it is sequenced first.
   (never directly to a child) remains a Phase 1-dependent follow-up.
 - ✅ `streak_3` and `graduate` achievement badges are now actually awarded (were defined in
   `badges.js` but never wired to any code path); `perfectionist` now awarded on a 100% quiz.
+- ✅ Fixed a real disconnect: `AIBuilderScreen` built its IF/THEN program in local
+  `useState` only and never called `setAgentBlocks` — so `ProfileScreen`'s "Bots built" stat
+  and the `builder_pro` badge (defined in `badges.js` as "5+ rules") were both permanently
+  unreachable, and the rule cap was hardcoded to 4, one below the badge's own threshold.
+  Running the agent now persists the program to `GameContext.agentBlocks` and the rule cap
+  is 5, so `builder_pro` is actually obtainable.
 - Still open: weekly summary screen, milestone celebrations beyond the existing
-  end-of-chapter/certificate screens, and `speedrunner`/`builder_pro` badges (need a timer and
-  AI Builder rule-count tracking respectively, neither of which exist yet).
+  end-of-chapter/certificate screens, and the `speedrunner` badge (needs a per-chapter timer,
+  which doesn't exist yet).
 
 ## Phase 4: Security (after Phase 1 ships)
 - OWASP Top 10 pass on the new API: auth (A07), injection (A03), broken access control (A01).
